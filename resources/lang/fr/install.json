@@ -1,0 +1,25 @@
+{
+    "steps" : {
+        "language" : "Langue",
+        "requirements" : "Configuration système",
+        "database" : "Base de données",
+        "app" : "Application",
+        "admin" : "Administrateur"
+    },
+    "fields" : {
+        "locale" : "Langue de l'interface",
+        "db_host" : "Hôte de la base de données",
+        "db_name" : "Nom de la base de données",
+        "db_user" : "Utilisateur",
+        "db_password" : "Mot de passe BDD",
+        "app_name" : "Nom de votre site",
+        "app_url" : "URL (ex: https://example.com)",
+        "admin_name" : "Nom complet",
+        "admin_email" : "Adresse email",
+        "admin_password" : "Mot de passe sécurisé"
+    },
+    "placeholders" : {
+        "db_host" : "127.0.0.1 ou localhost",
+        "app_name" : "Le nom de votre entreprise"
+    }
+}

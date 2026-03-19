@@ -1,0 +1,25 @@
+{
+    "steps" : {
+        "language" : "Language",
+        "requirements" : "System configuration",
+        "database" : "Database",
+        "app" : "Application",
+        "admin" : "Administrator"
+    },
+    "fields" : {
+        "locale" : "Interface language",
+        "db_host" : "Database host",
+        "db_name" : "Database name",
+        "db_user" : "User",
+        "db_password" : "Database password",
+        "app_name" : "Site name",
+        "app_url" : "URL (ex: https://example.com)",
+        "admin_name" : "Full name",
+        "admin_email" : "Email address",
+        "admin_password" : "Secure password"
+    },
+    "placeholders" : {
+        "db_host" : "127.0.0.1 or localhost",
+        "app_name" : "Your company name"
+    }
+}
