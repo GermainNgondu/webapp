@@ -2,6 +2,7 @@
 
 use App\Core\Framework\Support\DataForm\Services\FormService;
 use App\Core\Framework\Support\DataForm\Services\TabsFormService;
+use App\Core\Framework\Support\DataForm\Traits\HasDynamicForm;
 use App\Core\Framework\Support\DataForm\Traits\ValidatesSpatieData;
 use App\Core\Installer\Data\ClientData;
 use App\Models\Client;
@@ -11,6 +12,7 @@ use Livewire\Component;
     
 new class extends Component {
     use ValidatesSpatieData;
+    use HasDynamicForm;
     public array $form = [];
     public $client;
 
@@ -19,7 +21,7 @@ new class extends Component {
      */
     public function mount()
     {
-        $this->edit(3);
+        $this->empty();
     }
     
     public function fields()

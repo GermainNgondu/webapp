@@ -8,26 +8,16 @@ use App\Core\Framework\Support\DataForm\Attributes\FormField;
 
 trait HasDynamicForm
 {
-    /**
-     * Extrait les métadonnées de la classe Spatie Data
-     */
-    public function getFormSchema(string $dataClass): array
+    public function searchLazyOptions($model, $labelCol, $valueCol, $search = '', $page = 1)
     {
-        $reflection = new ReflectionClass($dataClass);
-        $fields = [];
+        $perPage = 20;
+        $results = $model::query()
+            ->when($search, fn($q) => $q->where($labelCol, 'like', "%{$search}%"))
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $attributes = $property->getAttributes(FormField::class);
-            
-            if (!empty($attributes)) {
-                $fields[] = [
-                    'name' => $property->getName(),
-                    'info' => $attributes[0]->newInstance(),
-                    'type' => $property->getType()?->getName(), // Récupère le type PHP (string, int, etc.)
-                ];
-            }
-        }
-
-        return $fields;
+        return [
+            'data' => $results->pluck($labelCol, $valueCol)->toArray(),
+            'hasMore' => $results->hasMorePages(),
+        ];
     }
 }

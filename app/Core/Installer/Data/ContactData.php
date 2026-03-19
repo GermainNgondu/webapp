@@ -2,7 +2,7 @@
 
 namespace App\Core\Installer\Data;
 
-use App\Core\Framework\Support\DataForm\Attributes\{Field};
+use App\Core\Framework\Support\DataForm\Attributes\{Field, VisibleIf};
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Data;
 
@@ -20,7 +20,14 @@ class ContactData extends Data {
 
         #[Field(label: 'Site Web', colSpan: 6)]
         public ?string $website = null,
+        
+        #[Field(label: 'Type', type: 'select', options: ['p' => 'Particulier', 's' => 'Société'])]
+        public ?string $type = null,
 
+        #[VisibleIf(field: 'type', value: 's')]
+        #[Field(label: 'Numéro de TVA')]
+        public ?string $tva_number = null,
+        
         #[Field(
             label: 'Compétences', 
             type: 'select', 

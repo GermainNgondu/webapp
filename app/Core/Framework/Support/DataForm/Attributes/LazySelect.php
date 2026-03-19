@@ -15,5 +15,6 @@ class LazySelect
         public int $colSpan = 12,
         public bool $multiple = false,
         public ?string $permission = null,
+        public ?string $editPermission = null,
     ) {}
 }

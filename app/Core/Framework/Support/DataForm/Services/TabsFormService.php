@@ -3,7 +3,7 @@
 namespace App\Core\Framework\Support\DataForm\Services;
 
 use ReflectionClass;
-use App\Core\Framework\Support\DataForm\Attributes\{Tab, Field, Repeater};
+use App\Core\Framework\Support\DataForm\Attributes\{Tab, Field, Repeater, LazySelect, VisibleIf};
 use Illuminate\Support\Str;
 
 class TabsFormService
@@ -14,34 +14,32 @@ class TabsFormService
     }
 
     /**
-     * Construit la structure des onglets pour l'affichage
+     * Construit la structure des onglets pour l'affichage (Build)
      */
-    public function build(string $dataClass): array
+    public function build(string $dataClass, array $inputData = []): array
     {
         $reflection = new ReflectionClass($dataClass);
         $tabs = [];
         $forbiddenTabs = [];
         $user = auth()->user();
 
-        foreach ($reflection->getProperties() as $property) {
+        foreach ($reflection->getProperties() as $property) 
+        {
             $tabAttr = $property->getAttributes(Tab::class)[0] ?? null;
             if (!$tabAttr) continue;
 
             $tabInst = $tabAttr->newInstance();
             $tabName = $tabInst->name;
 
-            // Sécurité : Si l'onglet est déjà dans la liste noire, on passe direct
-            if (in_array($tabName, $forbiddenTabs)) {
-                continue;
-            }
-            // Vérification : Si l'attribut définit une permission, on teste
+            if (in_array($tabName, $forbiddenTabs)) continue;
+
+            // Sécurité : Permission au niveau de l'onglet
             if ($tabInst->permission && (!$user || !$user->can($tabInst->permission))) {
-                $forbiddenTabs[] = $tabName; // On blackliste l'onglet pour les prochains champs
-                unset($tabs[$tabName]);      // Au cas où un champ sans permission l'aurait créé avant
+                $forbiddenTabs[] = $tabName;
+                unset($tabs[$tabName]);
                 continue;
             }
 
-            // Mode Lecture Seule au niveau de l'onglet
             $isTabReadOnly = $tabInst->editPermission && (!$user || !$user->can($tabInst->editPermission));
 
             if (!isset($tabs[$tabName])) {
@@ -56,25 +54,35 @@ class TabsFormService
                 ];
             }
 
+            $name = $property->getName();
             $fieldAttr = $property->getAttributes(Field::class)[0] ?? null;
             $repeaterAttr = $property->getAttributes(Repeater::class)[0] ?? null;
-            $inst = $fieldAttr?->newInstance() ?? $repeaterAttr?->newInstance();
+            $lazyAttr = $property->getAttributes(LazySelect::class)[0] ?? null;
+            $visibleAttr = $property->getAttributes(VisibleIf::class)[0] ?? null;
+
+            $inst = $fieldAttr?->newInstance() ?? $repeaterAttr?->newInstance() ?? $lazyAttr?->newInstance();
 
             if ($inst) {
-                // 3. Sécurité : Droit de VOIR le champ
                 if ($inst->permission && (!$user || !$user->can($inst->permission))) continue;
 
-                // 4. Mode Lecture Seule au niveau du champ
                 $isFieldReadOnly = $isTabReadOnly || ($inst->editPermission && (!$user || !$user->can($inst->editPermission)));
 
                 $fieldData = [
-                    'name' => $property->getName(),
+                    'name' => $name,
                     'label' => $inst->label,
                     'colSpan' => $inst->colSpan,
                     'readonly' => $isFieldReadOnly,
                     'required' => ($inst instanceof Field && $inst->required) || !$property->getType()?->allowsNull(),
-                    'multiple' => ($inst instanceof Field) ? $inst->multiple : false,
+                    'multiple' => method_exists($inst, 'multiple') ? $inst->multiple : false,
                 ];
+
+                if ($visibleAttr) {
+                    $vInst = $visibleAttr->newInstance();
+                    $fieldData['visibleIf'] = [
+                        'field' => $vInst->field,
+                        'value' => $vInst->value,
+                    ];
+                }
 
                 if ($repeaterAttr) {
                     $fieldData = array_merge($fieldData, [
@@ -82,7 +90,18 @@ class TabsFormService
                         'dataClass' => $inst->dataClass,
                         'addLabel' => $inst->addLabel,
                         'titleKey' => $inst->titleKey,
-                        'schema' => $this->getSchemaFromDataClass($inst->dataClass),
+                        'schema' => $this->getSchemaFromDataClass($inst->dataClass, $inputData[$name] ?? []),
+                    ]);
+                } elseif ($lazyAttr) {
+                    // Configuration spécifique pour le Lazy Loading
+                    $fieldData = array_merge($fieldData, [
+                        'type' => 'select',
+                        'options' => $this->getInitialLazyOptions($inst, $inputData[$name] ?? null),
+                        'lazy' => [
+                            'model' => str_replace('\\', '\\\\', $inst->model),
+                            'labelColumn' => $inst->labelColumn,
+                            'valueColumn' => $inst->valueColumn,
+                        ]
                     ]);
                 } else {
                     $fieldData = array_merge($fieldData, [
@@ -98,7 +117,7 @@ class TabsFormService
     }
 
     /**
-     * Nettoyage récursif des données selon les permissions (Sécurité finale)
+     * Nettoyage récursif des données (Sécurité finale avant validation)
      */
     public function secureData(string $dataClass, array $inputData): array
     {
@@ -109,49 +128,47 @@ class TabsFormService
         foreach ($reflection->getProperties() as $property) {
             $name = $property->getName();
             
-            // On récupère les attributs de manière indépendante
+            // On récupère tous les attributs possibles
             $tabAttr = $property->getAttributes(Tab::class)[0] ?? null;
             $fieldAttr = $property->getAttributes(Field::class)[0] ?? null;
             $repeaterAttr = $property->getAttributes(Repeater::class)[0] ?? null;
+            $lazyAttr = $property->getAttributes(LazySelect::class)[0] ?? null;
 
-            // 1. GESTION DE L'ID : Crucial pour les clés stables et le mapping d'erreurs
+            // 1. Conservation de l'ID (crucial pour les repeaters et IDs temporaires)
             if ($name === 'id' && isset($inputData['id'])) {
                 $safeData['id'] = $inputData['id'];
                 continue;
             }
 
-            // 2. FILTRE : Si ce n'est ni un champ ni un repeater, on ignore la propriété
-            if (!$fieldAttr && !$repeaterAttr) {
-                continue;
-            }
+            // Si ce n'est pas un champ géré par le formulaire, on l'ignore
+            if (!$fieldAttr && !$repeaterAttr && !$lazyAttr) continue;
             
             $tabInst = $tabAttr?->newInstance();
-            $inst = $fieldAttr?->newInstance() ?? $repeaterAttr?->newInstance();
+            $fieldInst = $fieldAttr?->newInstance() ?? $repeaterAttr?->newInstance() ?? $lazyAttr?->newInstance();
 
-            // 3. SÉCURITÉ : VÉRIFICATION DES PERMISSIONS
-            // On vérifie l'onglet seulement s'il existe (cas du niveau parent)
+            // 2. Sécurité : On vérifie les permissions de l'onglet si présent
             if ($tabInst) {
                 if ($tabInst->permission && (!$user || !$user->can($tabInst->permission))) continue;
                 if ($tabInst->editPermission && (!$user || !$user->can($tabInst->editPermission))) continue;
             }
 
-            // On vérifie systématiquement le champ ou le repeater
-            if ($inst->permission && (!$user || !$user->can($inst->permission))) continue;
-            if ($inst->editPermission && (!$user || !$user->can($inst->editPermission))) continue;
+            // 3. Sécurité : On vérifie les permissions du champ
+            if ($fieldInst->permission && (!$user || !$user->can($fieldInst->permission))) continue;
+            if ($fieldInst->editPermission && (!$user || !$user->can($fieldInst->editPermission))) continue;
 
-            // 4. TRAITEMENT DES DONNÉES
             if (!isset($inputData[$name])) continue;
 
+            // 4. Traitement récursif pour les repeaters
             if ($repeaterAttr) {
                 $safeData[$name] = [];
-                $subClass = $inst->dataClass; // Récupéré de l'attribut Repeater
+                $subClass = $repeaterAttr->newInstance()->dataClass;
 
                 foreach ($inputData[$name] as $key => $row) {
-                    // MAGIE : On préserve la clé ($key) qui est l'ID stable 'temp_...'
+                    // MAGIE : On préserve la clé ($key) 'temp_...' pour le mapping d'erreurs
                     $safeData[$name][$key] = $this->secureData($subClass, $row);
                 }
             } else {
-                // Pour les champs simples (text, select, multiple, etc.)
+                // Pour les champs simples ou LazySelect
                 $safeData[$name] = $inputData[$name];
             }
         }
@@ -159,32 +176,82 @@ class TabsFormService
         return $safeData;
     }
 
-    protected function getSchemaFromDataClass(string $dataClass): array
+    /**
+     * Génère le schéma pour les lignes d'un repeater
+     */
+    protected function getSchemaFromDataClass(string $dataClass, array $repeaterRows = []): array
     {
         $subReflection = new ReflectionClass($dataClass);
         $schema = [];
         $user = auth()->user();
 
         foreach ($subReflection->getProperties() as $prop) {
-            $attr = $prop->getAttributes(Field::class)[0] ?? null;
-            if ($attr) {
-                $inst = $attr->newInstance();
-                
+
+            $fieldAttr = $prop->getAttributes(Field::class)[0] ?? null;
+            $lazyAttr = $prop->getAttributes(LazySelect::class)[0] ?? null;
+            $visibleAttr = $prop->getAttributes(VisibleIf::class)[0] ?? null;
+
+            if ($fieldAttr || $lazyAttr) {
+                $inst = $fieldAttr ? $fieldAttr->newInstance() : $lazyAttr->newInstance();
+                $name = $prop->getName();
+
                 if ($inst->permission && (!$user || !$user->can($inst->permission))) {
                     continue;
                 }
 
-                $schema[] = [
-                    'name'     => $prop->getName(),
+                $fieldConfig = [
+                    'name'     => $name,
                     'label'    => $inst->label,
-                    'type'     => $inst->type,
+                    'type'     => $lazyAttr ? 'select' : $inst->type,
                     'colSpan'  => $inst->colSpan,
-                    'options'  => $inst->options,
                     'multiple' => $inst->multiple,
-                    'required' => $inst->required || !$prop->getType()?->allowsNull(),
+                    'required' => (property_exists($inst, 'required') && $inst->required) || !$prop->getType()?->allowsNull(),
                 ];
+                
+                if ($visibleAttr) 
+                {
+                    $vInst = $visibleAttr->newInstance();
+                    $fieldConfig['visibleIf'] = [
+                        'field' => $vInst->field,
+                        'value' => $vInst->value,
+                    ];
+                }
+
+                if ($lazyAttr) {
+
+                    $existingIds = collect($repeaterRows)->pluck($name)->flatten()->filter()->unique()->toArray();
+                    
+                    $fieldConfig['options'] = $inst->model::whereIn($inst->valueColumn, $existingIds)
+                        ->pluck($inst->labelColumn, $inst->valueColumn)
+                        ->toArray();
+
+                    $fieldConfig['lazy'] = [
+                        'model' => str_replace('\\', '\\\\', $inst->model),
+                        'labelColumn' => $inst->labelColumn,
+                        'valueColumn' => $inst->valueColumn,
+                    ];
+                } else {
+                    $fieldConfig['options'] = $inst->options;
+                }
+
+                $schema[] = $fieldConfig;
             }
         }
         return $schema;
+    }
+
+    /**
+     * Charge uniquement les options déjà sélectionnées pour l'affichage initial du LazySelect
+     */
+    protected function getInitialLazyOptions($attr, $value): array 
+    {
+        if (empty($value)) return [];
+        
+        $values = is_array($value) ? $value : [$value];
+        
+        // On récupère uniquement les libellés des IDs déjà présents dans la donnée
+        return $attr->model::whereIn($attr->valueColumn, $values)
+            ->pluck($attr->labelColumn, $attr->valueColumn)
+            ->toArray();
     }
 }
