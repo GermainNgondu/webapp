@@ -1,4 +1,3 @@
-{{-- resources/views/components/dataform/fields/select.blade.php --}}
 @props(['field'])
 
 @php
@@ -10,6 +9,7 @@
     $hasCondition = isset($field['visibleIf']);
     $modifier = $hasCondition ? '.live.debounce.250ms' : '';
 @endphp
+
 
 <flux:field>
 

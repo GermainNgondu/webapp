@@ -5,11 +5,12 @@ namespace App\Core\Framework\Support\DataForm\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class VisibleIf
+class Step
 {
     public function __construct(
-        public string $field,
-        public mixed $value,
-        public string $operator = '=' // =, !=, >, <, in, not_in
+        public string $name,
+        public ?string $description = null,
+        public ?string $icon = null,
+        public ?string $permission = null,
     ) {}
 }

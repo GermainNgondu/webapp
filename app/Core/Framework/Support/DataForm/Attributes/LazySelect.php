@@ -16,5 +16,7 @@ class LazySelect
         public bool $multiple = false,
         public ?string $permission = null,
         public ?string $editPermission = null,
+        public ?string $iconColumn = null,
+        public ?string $imageColumn = null,
     ) {}
 }

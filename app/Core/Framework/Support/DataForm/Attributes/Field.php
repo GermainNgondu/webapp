@@ -18,5 +18,6 @@ class Field
         public bool $required = false,
         public ?string $permission = null,
         public ?string $editPermission = null,
+        public ?string $description = null,
     ) {}
 }

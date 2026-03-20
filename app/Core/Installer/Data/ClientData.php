@@ -2,7 +2,7 @@
 
 namespace App\Core\Installer\Data;
 
-use App\Core\Framework\Support\DataForm\Attributes\{Tab, Field, Repeater, LazySelect};
+use App\Core\Framework\Support\DataForm\Attributes\{Tab, Field, Repeater, LazySelect,Section};
 use App\Core\Installer\Data\ContactData;
 use App\Models\User;
 use Illuminate\Validation\Rule;
@@ -14,24 +14,23 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 class ClientData extends Data {
     public function __construct(
         public ?int $id = null,
+
+        
         // --- ONGLET : GÉNÉRAL (Icône: building-office) ---
-        #[Tab('Général', icon: 'building-office'), 
+        #[Section(title: 'Général', description: 'Informations publiques du profil', icon: 'building-office'),
+            Tab('Général', icon: 'building-office'), 
             Field(
                 label: 'Nom de l\'entreprise / Client',
                 type: 'text',
                 colSpan: 8,
-                required: true
+                required: true,
+                description: 'le nom sera utilisé pour la facturation et les devis',
             ), 
             Required
         ]
         public string $name,
-        #[Tab('Général'), LazySelect(
-            label: 'Gestionnaire du compte',
-            model: User::class,
-            labelColumn: 'name',
-            colSpan: 6
-        )]
-        public ?int $user_id = null,
+
+
         #[Tab('Général'), 
             Field(
                 label: 'Type de client',
@@ -44,8 +43,11 @@ class ClientData extends Data {
         ]
         public string $type,
 
+
         // --- ONGLET : ---
-        #[Tab('Contacts'), Repeater(
+        #[Section(title: 'Contacts', description: 'Gestion des accès', icon: 'user'),
+            Tab('Contacts'), 
+            Repeater(
             dataClass: ContactData::class, 
             label: 'Liste des contacts', 
             addLabel: 'Ajouter un contact',
@@ -56,7 +58,8 @@ class ClientData extends Data {
         
 
         // --- ONGLET : FACTURATION (Icône: credit-card, Badge: "Compta") ---
-        #[Tab(
+        #[Section(title: 'Facturation', description: 'Gestion des accès', icon: 'credit-card'),
+            Tab(
             'Facturation',
             icon: 'credit-card',
             badge: 'Compta',

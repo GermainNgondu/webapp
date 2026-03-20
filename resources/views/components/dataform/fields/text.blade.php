@@ -1,14 +1,25 @@
 @props(['field'])
 
+@php
+    $modelName = "form." . $field['name'];
+    $wireModel = isset($field['visibleIf']) 
+        ? 'wire:model.live.debounce.250ms' 
+        : 'wire:model';
+@endphp
+
 <flux:field {{ $attributes }}>
     
     <x-dataform.fields.label :field="$field" />
     
     <flux:input 
-        wire:model="form.{{ $field['name'] }}" 
+        {{ $attributes->merge([$wireModel => $modelName]) }}
         :disabled="$field['readonly'] ?? false"
         type="{{ $field['type'] ?? 'text' }}" 
     />
 
     <flux:error name="form.{{ $field['name'] }}" />
+    @isset($field['description'])
+    <flux:description>{{$field['description']}}</flux:description>
+    @endisset
+    
 </flux:field>

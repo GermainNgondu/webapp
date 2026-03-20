@@ -2,10 +2,6 @@
 
 namespace App\Core\Framework\Support\DataForm\Traits;
 
-use ReflectionClass;
-use ReflectionProperty;
-use App\Core\Framework\Support\DataForm\Attributes\FormField;
-
 trait HasDynamicForm
 {
     public function searchLazyOptions($model, $labelCol, $valueCol, $search = '', $page = 1)
@@ -19,5 +15,17 @@ trait HasDynamicForm
             'data' => $results->pluck($labelCol, $valueCol)->toArray(),
             'hasMore' => $results->hasMorePages(),
         ];
+    }
+
+    public function validateStep(array $fieldNames)
+    {
+        try {
+            $this->validateOnly($fieldNames[0], $this->getRules()); 
+            foreach($fieldNames as $field) {
+                $this->validateOnly($field);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        }
     }
 }

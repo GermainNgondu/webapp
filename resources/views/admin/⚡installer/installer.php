@@ -1,10 +1,12 @@
 <?php
 
-use App\Core\Framework\Support\DataForm\Services\FormService;
+use App\Core\Framework\Support\DataForm\Services\SimpleFormService;
 use App\Core\Framework\Support\DataForm\Services\TabsFormService;
+use App\Core\Framework\Support\DataForm\Services\WizardFormService;
 use App\Core\Framework\Support\DataForm\Traits\HasDynamicForm;
 use App\Core\Framework\Support\DataForm\Traits\ValidatesSpatieData;
 use App\Core\Installer\Data\ClientData;
+use App\Core\Installer\Data\InstallData;
 use App\Models\Client;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -24,14 +26,19 @@ new class extends Component {
         $this->empty();
     }
     
-    public function fields()
+    public function simple()
     {
-        return FormService::init()->getSchema(ClientData::class);
+        return SimpleFormService::init()->build(ClientData::class);
     }
 
     public function tabs()
     {
         return TabsFormService::init()->build(ClientData::class);
+    }
+
+    public function wizard()
+    {
+        return WizardFormService::init()->build(InstallData::class);
     }
 
     public function save()

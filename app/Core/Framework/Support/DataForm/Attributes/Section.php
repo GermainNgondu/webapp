@@ -5,11 +5,11 @@ namespace App\Core\Framework\Support\DataForm\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class VisibleIf
+class Section
 {
     public function __construct(
-        public string $field,
-        public mixed $value,
-        public string $operator = '=' // =, !=, >, <, in, not_in
+        public string $title,
+        public ?string $description = null,
+        public ?string $icon = null,
     ) {}
 }
