@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-Route::livewire('/installer', 'admin::installer');
+Route::livewire('/', 'admin::installer');
 
 Route::get('/login-admin', function () {
     $user = User::whereEmail('admin@test.com')->first();

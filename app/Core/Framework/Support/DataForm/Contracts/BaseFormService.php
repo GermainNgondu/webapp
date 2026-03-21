@@ -72,6 +72,7 @@ abstract class BaseFormService
             return null; // On ne renvoie rien, le champ ne sera pas dans le tableau
         }
 
+        $dataClass = $property->getDeclaringClass()->getName();
         $name = $property->getName();
         
         // CALCUL DU READONLY (Propagation)
@@ -92,7 +93,22 @@ abstract class BaseFormService
             'options' => [],
         ];
 
+        if ($type === 'media') {
+            $modelClass = $this->getModelClass($dataClass);
+            $collection = $inst->options['collection'] ?? 'default';
+            
+            // On récupère le modèle uniquement si on a un ID (mode édition)
+            $model = isset($inputData['id']) ? $modelClass::find($inputData['id']) : null;
+
+            $data['existing'] = $model ? $model->getMedia($collection)->map(fn($m) => [
+                'id' => $m->id,
+                'url' => $m->getUrl('thumb') ?: $m->getUrl(),
+                'name' => $m->file_name,
+            ])->toArray() : [];
+        }
+
         $sectionAttr = $property->getAttributes(Section::class)[0] ?? null;
+
         if ($sectionAttr) {
             $s = $sectionAttr->newInstance();
             $data['section'] = ['title' => $s->title, 'description' => $s->description, 'icon' => $s->icon];
@@ -129,6 +145,29 @@ abstract class BaseFormService
         }
 
         return $data;
+    }
+
+    /**
+     * Détermine la classe du Modèle Eloquent lié à la classe Data.
+     */
+    protected function getModelClass(string $dataClass): string
+    {
+        // Option 1 : Vérifier si une constante 'MODEL' est définie dans votre Data Class
+        if (defined("$dataClass::MODEL")) {
+            return $dataClass::MODEL;
+        }
+
+        // Option 2 : Convention de nommage (ex: ClientData -> Client)
+        // On enlève 'Data' à la fin et on cherche dans le dossier App\Models
+        $modelName = str_replace('Data', '', class_basename($dataClass));
+        $guessedModel = "App\\Models\\" . $modelName;
+
+        if (class_exists($guessedModel)) {
+            return $guessedModel;
+        }
+
+        // Fallback ou erreur si non trouvé
+        throw new \Exception("Impossible de trouver le modèle associé à $dataClass. Ajoutez 'public const MODEL = MonModele::class;' dans votre Data class.");
     }
 
     protected function getSchemaFromDataClass(string $dataClass, array $repeaterRows = [], bool $parentReadOnly = false): array

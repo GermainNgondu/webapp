@@ -28,4 +28,38 @@ trait HasDynamicForm
             throw $e;
         }
     }
+
+    /**
+     * Supprime un média via Spatie (Appelé par le bouton Trash en JS)
+     */
+    public function deleteMedia($mediaId, $fieldName)
+    {
+        $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($mediaId);
+        if ($media) {
+            $media->delete();
+            $this->notification()->success('Fichier supprimé');
+        }
+    }
+
+    /**
+     * Utilitaire pour synchroniser les médias après le save()
+     */
+    protected function syncMedia($model, $data)
+    {
+        foreach ($data as $key => $value) {
+            // On vérifie si le champ est un fichier uploadé par Livewire
+            if ($value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                $model->addMedia($value->getRealPath())
+                      ->usingFileName($value->getClientOriginalName())
+                      ->toMediaCollection($key); // On utilise le nom du champ comme collection par défaut
+            } elseif (is_array($value)) {
+                // Gestion du multiple
+                foreach ($value as $file) {
+                    if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                        $model->addMedia($file->getRealPath())->toMediaCollection($key);
+                    }
+                }
+            }
+        }
+    }
 }

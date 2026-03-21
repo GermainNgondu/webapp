@@ -42,8 +42,6 @@ class ClientData extends Data {
             Required
         ]
         public string $type,
-
-
         // --- ONGLET : ---
         #[Section(title: 'Contacts', description: 'Gestion des accès', icon: 'user'),
             Tab('Contacts'), 
@@ -56,50 +54,12 @@ class ClientData extends Data {
         /** @var ContactData[] */
         public array $contacts = [],
         
-
-        // --- ONGLET : FACTURATION (Icône: credit-card, Badge: "Compta") ---
-        #[Section(title: 'Facturation', description: 'Gestion des accès', icon: 'credit-card'),
-            Tab(
-            'Facturation',
-            icon: 'credit-card',
-            badge: 'Compta',
-            permission: 'view-finance',
-            editPermission: 'edit-finance'
-        ), 
-            Field(
-                label: 'Numéro de TVA',
-                type: 'text',
-                colSpan: 12
-            )
-        ]
-        public ?string $vat_number = null,
-
-        #[Tab('Facturation'), 
-            Field(
-                label: 'Adresse de facturation',
-                type: 'text',
-                colSpan: 12
-            )
-        ]
-        public ?string $address = null,
-
-        #[Tab('Facturation'), 
-            Field(
-                label: 'Code Postal',
-                type: 'text',
-                colSpan: 4
-            )
-        ]
-        public ?string $zip_code = null,
-
-        #[Tab('Facturation'), 
-            Field(
-                label: 'Ville',
-                type: 'text',
-                colSpan: 8
-            )
-        ]
-        public ?string $city = null,
+        #[Section(title: 'Notes', description: 'Notes internes', icon: 'document-text'), Field(
+            label: 'Notes internes',
+            type: 'richtext',
+            colSpan: 12,
+        )]
+        public ?string $notes = null,
     ) {}
 
     public static function rules(ValidationContext|null $context = null): array

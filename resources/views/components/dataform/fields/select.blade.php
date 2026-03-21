@@ -11,7 +11,7 @@
 @endphp
 
 
-<flux:field>
+<flux:field {{ $attributes }}>
 
     <x-dataform.fields.label :field="$field" />
 

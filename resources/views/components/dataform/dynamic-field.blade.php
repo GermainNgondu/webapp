@@ -53,6 +53,15 @@
                 @case('date')
                     <x-dataform.fields.date :field="$field" {{ $attributes }} />
                     @break
+                @case('password')
+                    <x-dataform.fields.password :field="$field" {{ $attributes }} />
+                    @break
+                @case('richtext')
+                    <x-dataform.fields.richtext :field="$field" {{ $attributes }} />
+                    @break
+                @case('media')
+                    <x-dataform.fields.media-picker :field="$field" {{ $attributes }} />
+                    @break
                 @default
                     <x-dataform.fields.text :field="$field" {{ $attributes }} />
             @endswitch 

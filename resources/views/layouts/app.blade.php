@@ -10,6 +10,8 @@
 
         @fluxAppearance
         @livewireStyles
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
         
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
@@ -68,8 +70,11 @@
         {{ $slot }}
 
         <x-notification />
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>        
         @fluxScripts
         @livewireScripts
-        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
     </body>
 </html>
