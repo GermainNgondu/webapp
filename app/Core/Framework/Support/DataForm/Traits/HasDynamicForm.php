@@ -2,8 +2,24 @@
 
 namespace App\Core\Framework\Support\DataForm\Traits;
 
+use Livewire\Attributes\On;
+
 trait HasDynamicForm
 {
+    /**
+     * Écoute l'événement envoyé par la Modal de sélection
+     */
+    #[On('media-selected')]
+    public function updateMediaProperty($property, $id)
+    {
+        // On vérifie si la propriété appartient bien à ce formulaire
+        // Cela mettra à jour par exemple $this->clientData->logo_id
+        if (property_exists($this, explode('.', $property)[0])) {
+            data_set($this, $property, $id);
+            // Optionnel : notifier l'utilisateur
+            $this->dispatch('notify', message: 'Média sélectionné');
+        }
+    }
     public function searchLazyOptions($model, $labelCol, $valueCol, $search = '', $page = 1)
     {
         $perPage = 20;

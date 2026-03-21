@@ -2,9 +2,8 @@
 
 namespace App\Core\Installer\Data;
 
-use App\Core\Framework\Support\DataForm\Attributes\{Tab, Field, Repeater, LazySelect,Section};
+use App\Core\Framework\Support\DataForm\Attributes\{Tab, Field, Repeater,Section};
 use App\Core\Installer\Data\ContactData;
-use App\Models\User;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Data;
@@ -42,6 +41,7 @@ class ClientData extends Data {
             Required
         ]
         public string $type,
+
         // --- ONGLET : ---
         #[Section(title: 'Contacts', description: 'Gestion des accès', icon: 'user'),
             Tab('Contacts'), 

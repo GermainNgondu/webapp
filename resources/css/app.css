@@ -1,5 +1,8 @@
+@import 'dropzone/dist/dropzone.css';
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+
+
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -61,6 +64,13 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
+/* Vos styles personnalisés pour Flux UI */
+.dropzone {
+    @apply border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl transition-colors duration-200;
+}
+.dropzone.dz-drag-hover {
+    @apply border-zinc-500 bg-zinc-50/10;
+}
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */

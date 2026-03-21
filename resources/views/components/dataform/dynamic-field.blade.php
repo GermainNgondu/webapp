@@ -59,12 +59,18 @@
                 @case('richtext')
                     <x-dataform.fields.richtext :field="$field" {{ $attributes }} />
                     @break
-                @case('media')
-                    <x-dataform.fields.media-picker :field="$field" {{ $attributes }} />
+                @case('media-picker')
+                    @php $model = "form.".$field['name']; @endphp
+                    <x-dataform.fields.media-picker 
+                        :field="$field"
+                        :model="$this->getPropertyValue($model)"
+                        wire:model="{{ $model }}"
+                    />
                     @break
                 @default
                     <x-dataform.fields.text :field="$field" {{ $attributes }} />
             @endswitch 
 
     </div>
+    
 @endif

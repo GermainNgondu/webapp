@@ -23,7 +23,7 @@ new class extends Component {
      */
     public function mount()
     {
-        $this->empty();
+        $this->edit(1);
     }
     
     public function simple()

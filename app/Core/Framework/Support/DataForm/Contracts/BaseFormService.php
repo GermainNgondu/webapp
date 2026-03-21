@@ -3,7 +3,7 @@
 namespace App\Core\Framework\Support\DataForm\Contracts;
 
 use ReflectionClass;
-use App\Core\Framework\Support\DataForm\Attributes\{Field, Repeater, VisibleIf, LazySelect, Section};
+use App\Core\Framework\Support\DataForm\Attributes\{Field, Repeater, VisibleIf, LazySelect, Section,MediaPicker};
 
 abstract class BaseFormService
 {
@@ -61,8 +61,10 @@ abstract class BaseFormService
         $repeaterAttr = $property->getAttributes(Repeater::class)[0] ?? null;
         $lazyAttr = $property->getAttributes(LazySelect::class)[0] ?? null;
         $visibleAttr = $property->getAttributes(VisibleIf::class)[0] ?? null;
+        $mediaAttr = $property->getAttributes(MediaPicker::class)[0] ?? null;
+        $sectionAttr = $property->getAttributes(Section::class)[0] ?? null;
 
-        $inst = ($fieldAttr ?? $repeaterAttr ?? $lazyAttr)?->newInstance();
+        $inst = ($fieldAttr ?? $repeaterAttr ?? $lazyAttr ?? $mediaAttr)?->newInstance();
         if (!$inst) return null;
 
         $user = auth()->user();
@@ -107,7 +109,6 @@ abstract class BaseFormService
             ])->toArray() : [];
         }
 
-        $sectionAttr = $property->getAttributes(Section::class)[0] ?? null;
 
         if ($sectionAttr) {
             $s = $sectionAttr->newInstance();
@@ -139,8 +140,13 @@ abstract class BaseFormService
                     'imageColumn' => $inst->imageColumn ?? null,
                 ]
             ]);
-        } else {
-            $data['type'] = $inst->type;
+        } 
+        elseif($mediaAttr)
+        {
+            $data['type'] = 'media-picker';
+            $data['collection'] = $inst->collection;
+        }else {
+            $data['type'] = $type;
             $data['options'] = $inst->options ?? [];
         }
 

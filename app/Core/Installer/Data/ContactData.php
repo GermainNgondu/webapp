@@ -2,16 +2,18 @@
 
 namespace App\Core\Installer\Data;
 
-use App\Core\Framework\Support\DataForm\Attributes\{Field, VisibleIf};
+use App\Core\Framework\Support\DataForm\Attributes\{Field, VisibleIf, MediaPicker};
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Data;
 
 class ContactData extends Data {
     public function __construct(
         public ?string $id = null,
-        
+        #[MediaPicker(label: 'Photo')]
+        public ?int $photo_id,        
         #[Field(label: 'Nom complet', colSpan: 6, required: true)]
         public string $name,
+
         #[Field(label: 'Email professionnel', colSpan: 12, type: 'email',permission: 'view-emails'), Email]
         public ?string $email = null,
 
