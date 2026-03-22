@@ -19,5 +19,6 @@ class Field
         public ?string $permission = null,
         public ?string $editPermission = null,
         public ?string $description = null,
+        public ?string $rules = null,
     ) {}
 }

@@ -2,80 +2,65 @@
 
 namespace App\Core\Framework\Support\DataForm\Traits;
 
-use Livewire\Attributes\On;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 trait HasDynamicForm
 {
+    use HasWizardForm;
+    use HasFormMedia;
+    use HasLazySelect;
+
+    public ?Model $model = null;
+
+    public array $form = [];
+
+    public $dataClass;
+
     /**
-     * Écoute l'événement envoyé par la Modal de sélection
+     * Prépare les règles de validation en tableau (array) de manière plus robuste.
      */
-    #[On('media-selected')]
-    public function updateMediaProperty($property, $id)
+    protected function getFieldRules(array $field, $modelId = null): array
     {
-        // On vérifie si la propriété appartient bien à ce formulaire
-        // Cela mettra à jour par exemple $this->clientData->logo_id
-        if (property_exists($this, explode('.', $property)[0])) {
-            data_set($this, $property, $id);
-            // Optionnel : notifier l'utilisateur
-            $this->dispatch('notify', message: 'Média sélectionné');
+        $rules = $field['rules'] ?? [];
+        if (is_string($rules)) {
+            $rules = explode('|', $rules);
         }
-    }
-    public function searchLazyOptions($model, $labelCol, $valueCol, $search = '', $page = 1)
-    {
-        $perPage = 20;
-        $results = $model::query()
-            ->when($search, fn($q) => $q->where($labelCol, 'like', "%{$search}%"))
-            ->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data' => $results->pluck($labelCol, $valueCol)->toArray(),
-            'hasMore' => $results->hasMorePages(),
-        ];
+        // Nettoyage des règles vides
+        $rules = array_filter($rules);
+
+        // Ajout intelligent de 'required' ou 'nullable'
+        if ($field['required'] ?? false) {
+            $rules = array_diff($rules, ['nullable']);
+            if (!in_array('required', $rules)) {
+                $rules[] = 'required';
+            }
+        } else {
+            if (!empty($rules) && !in_array('nullable', $rules)) {
+                $rules[] = 'nullable';
+            }
+        }
+
+        // Remplacement dynamique de l'ID pour les règles de type 'unique'
+        return array_map(function ($rule) use ($modelId) {
+            if (is_string($rule)) {
+                return str_replace(':id', $modelId ?? 'NULL', $rule);
+            }
+            return $rule;
+        }, $rules);
     }
 
-    public function validateStep(array $fieldNames)
+    protected function validateData(string $dataClass, array $payload)
     {
         try {
-            $this->validateOnly($fieldNames[0], $this->getRules()); 
-            foreach($fieldNames as $field) {
-                $this->validateOnly($field);
-            }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Supprime un média via Spatie (Appelé par le bouton Trash en JS)
-     */
-    public function deleteMedia($mediaId, $fieldName)
-    {
-        $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($mediaId);
-        if ($media) {
-            $media->delete();
-            $this->notification()->success('Fichier supprimé');
-        }
-    }
-
-    /**
-     * Utilitaire pour synchroniser les médias après le save()
-     */
-    protected function syncMedia($model, $data)
-    {
-        foreach ($data as $key => $value) {
-            // On vérifie si le champ est un fichier uploadé par Livewire
-            if ($value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                $model->addMedia($value->getRealPath())
-                      ->usingFileName($value->getClientOriginalName())
-                      ->toMediaCollection($key); // On utilise le nom du champ comme collection par défaut
-            } elseif (is_array($value)) {
-                // Gestion du multiple
-                foreach ($value as $file) {
-                    if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                        $model->addMedia($file->getRealPath())->toMediaCollection($key);
-                    }
-                }
-            }
+            return $dataClass::validateAndCreate($payload);
+        } catch (ValidationException $e) {
+            throw ValidationException::withMessages(
+                collect($e->errors())
+                    ->mapWithKeys(fn ($messages, $key) => ["form.{$key}" => $messages])
+                    ->all()
+            );
         }
     }
 }

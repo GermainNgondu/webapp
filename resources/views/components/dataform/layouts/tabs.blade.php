@@ -1,4 +1,4 @@
-@props(['tabs', 'form'])
+@props(['tabs'])
 
 <div x-data="{ 
     activeTab: '{{ array_values($tabs)[0]['meta']['slug'] }}'
@@ -45,23 +45,7 @@
                 x-transition:leave-start="opacity-100 translate-y-0"
                 x-transition:leave-end="opacity-0 -translate-y-4"
             >
-                <div class="grid grid-cols-12 gap-6 pb-8">
-                    @foreach($tab['fields'] as $field)
-                        @if(($field['type'] ?? '') === 'hidden')
-                            <x-dataform.dynamic-field :field="$field" />
-                        @else
-                            <div class="col-span-12 md:col-span-{{ $field['colSpan'] }}">
-                                
-                                @if(isset(${"slot_" . $field['name']}))
-                                    {{ ${"slot_" . $field['name']} }}
-                                @else
-                                    <x-dataform.dynamic-field :field="$field" />
-                                @endif
-
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
+                <x-dataform.render.fields :fields="$tab['fields']" />
             </div>
         @endforeach
     </div>

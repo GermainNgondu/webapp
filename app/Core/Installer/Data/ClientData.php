@@ -54,7 +54,7 @@ class ClientData extends Data {
         /** @var ContactData[] */
         public array $contacts = [],
         
-        #[Section(title: 'Notes', description: 'Notes internes', icon: 'document-text'), Field(
+        #[Section(title: 'Notes', description: 'Notes internes', icon: 'document-text'),Tab('Contacts'),  Field(
             label: 'Notes internes',
             type: 'richtext',
             colSpan: 12,

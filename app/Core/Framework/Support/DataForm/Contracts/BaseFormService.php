@@ -3,7 +3,9 @@
 namespace App\Core\Framework\Support\DataForm\Contracts;
 
 use ReflectionClass;
-use App\Core\Framework\Support\DataForm\Attributes\{Field, Repeater, VisibleIf, LazySelect, Section,MediaPicker};
+use ReflectionProperty;
+use Exception;
+use App\Core\Framework\Support\DataForm\Attributes\{Field, Repeater, VisibleIf, LazySelect, Section, MediaPicker};
 
 abstract class BaseFormService
 {
@@ -15,7 +17,6 @@ abstract class BaseFormService
     public function secureData(string $dataClass, array $inputData): array
     {
         $reflection = new ReflectionClass($dataClass);
-        $user = auth()->user();
         $safeData = [];
 
         foreach ($reflection->getProperties() as $property) {
@@ -26,21 +27,15 @@ abstract class BaseFormService
                 continue;
             }
 
-            $fieldAttr = $property->getAttributes(Field::class)[0] ?? null;
-            $repeaterAttr = $property->getAttributes(Repeater::class)[0] ?? null;
-            $lazyAttr = $property->getAttributes(LazySelect::class)[0] ?? null;
-
-            if (!$fieldAttr && !$repeaterAttr && !$lazyAttr) continue;
-
-            $inst = ($fieldAttr ?? $repeaterAttr ?? $lazyAttr)->newInstance();
+            $inst = $this->getPrimaryAttribute($property);
+            if (!$inst) continue;
 
             // SÉCURITÉ : Droit de voir ET d'éditer
-            if ($inst->permission && (!$user || !$user->can($inst->permission))) continue;
-            if ($inst->editPermission && (!$user || !$user->can($inst->editPermission))) continue;
+            if (!$this->canView($inst) || !$this->canEdit($inst)) continue;
 
             if (!isset($inputData[$name])) continue;
 
-            if ($repeaterAttr) {
+            if ($inst instanceof Repeater) {
                 $safeData[$name] = [];
                 foreach ($inputData[$name] as $key => $row) {
                     $safeData[$name][$key] = $this->secureData($inst->dataClass, $row);
@@ -55,102 +50,135 @@ abstract class BaseFormService
     /**
      * Sécurité de lecture : Construit la config du champ.
      */
-    protected function resolveField($property, array $inputData = [], bool $parentReadOnly = false): ?array
+    protected function resolveField(ReflectionProperty $property, array $inputData = [], bool $parentReadOnly = false): ?array
     {
-        $fieldAttr = $property->getAttributes(Field::class)[0] ?? null;
-        $repeaterAttr = $property->getAttributes(Repeater::class)[0] ?? null;
-        $lazyAttr = $property->getAttributes(LazySelect::class)[0] ?? null;
-        $visibleAttr = $property->getAttributes(VisibleIf::class)[0] ?? null;
-        $mediaAttr = $property->getAttributes(MediaPicker::class)[0] ?? null;
-        $sectionAttr = $property->getAttributes(Section::class)[0] ?? null;
-
-        $inst = ($fieldAttr ?? $repeaterAttr ?? $lazyAttr ?? $mediaAttr)?->newInstance();
+        $inst = $this->getPrimaryAttribute($property);
         if (!$inst) return null;
 
-        $user = auth()->user();
-
-        // FIX : SÉCURITÉ D'AFFICHAGE (ex: view-emails)
-        if ($inst->permission && (!$user || !$user->can($inst->permission))) {
-            return null; // On ne renvoie rien, le champ ne sera pas dans le tableau
+        // SÉCURITÉ D'AFFICHAGE
+        if (!$this->canView($inst)) {
+            return null;
         }
 
         $dataClass = $property->getDeclaringClass()->getName();
         $name = $property->getName();
         
         // CALCUL DU READONLY (Propagation)
-        $isReadOnly = $parentReadOnly || ($inst->editPermission && (!$user || !$user->can($inst->editPermission)));
+        $isReadOnly = $parentReadOnly || !$this->canEdit($inst);
 
         $type = $inst->type ?? 'text';
-        $description = $inst->description ?? null;
+        if ($inst instanceof MediaPicker) $type = 'media-picker';
+        if ($inst instanceof Repeater) $type = 'repeater';
+        if ($inst instanceof LazySelect) $type = 'select';
 
         $data = [
             'name' => $name,
-            'label' => $inst->label,
+            'label' => $inst->label ?? null,
             'colSpan' => ($type === 'hidden') ? 0 : ($inst->colSpan ?? 12),
             'multiple' => $inst->multiple ?? false,
             'readonly' => $isReadOnly,
             'type' => $type,
-            'description' => $description,
-            'required' => ($inst instanceof Field && $inst->required) || !$property->getType()?->allowsNull(),
-            'options' => [],
+            'description' => $inst->description ?? null,
+            'required' => ($inst instanceof Field && $inst->required == true),
+            'options' => $inst->options ?? [],
+            'rules' => $inst->rules ?? 'nullable',
         ];
 
-        if ($type === 'media') {
-            $modelClass = $this->getModelClass($dataClass);
-            $collection = $inst->options['collection'] ?? 'default';
-            
-            // On récupère le modèle uniquement si on a un ID (mode édition)
-            $model = isset($inputData['id']) ? $modelClass::find($inputData['id']) : null;
+        // Résolution de type spécifique (Media, Repeater, Lazy)
+        $data = array_merge($data, $this->resolveTypeSpecificData($inst, $dataClass, $name, $inputData, $isReadOnly));
 
-            $data['existing'] = $model ? $model->getMedia($collection)->map(fn($m) => [
-                'id' => $m->id,
-                'url' => $m->getUrl('thumb') ?: $m->getUrl(),
-                'name' => $m->file_name,
-            ])->toArray() : [];
-        }
+        $data = array_merge($data, $this->resolveSecondaryAttributes($property));
 
+        return $data;
+    }
 
-        if ($sectionAttr) {
-            $s = $sectionAttr->newInstance();
-            $data['section'] = ['title' => $s->title, 'description' => $s->description, 'icon' => $s->icon];
-        }
+    protected function resolveTypeSpecificData(object $inst, string $dataClass, string $name, array $inputData, bool $isReadOnly): array
+    {
+        $data = [];
 
-        if ($visibleAttr) {
-            $v = $visibleAttr->newInstance();
-            $data['visibleIf'] = ['field' => $v->field, 'value' => $v->value, 'operator' => $v->operator ?? '='];
-        }
-
-        if ($repeaterAttr) {
-            $data = array_merge($data, [
-                'type' => 'repeater',
-                'dataClass' => $inst->dataClass,
-                'addLabel' => $inst->addLabel,
-                'titleKey' => $inst->titleKey,
-                'schema' => $this->getSchemaFromDataClass($inst->dataClass, $inputData[$name] ?? [], $isReadOnly),
-            ]);
-        } elseif ($lazyAttr) {
-            $data = array_merge($data, [
-                'type' => 'select',
-                'options' => $this->getInitialLazyOptions($inst, $inputData[$name] ?? null),
-                'lazy' => [
-                    'model' => str_replace('\\', '\\\\', $inst->model), 
-                    'labelColumn' => $inst->labelColumn, 
-                    'valueColumn' => $inst->valueColumn,
-                    'iconColumn' => $inst->iconColumn ?? null,
-                    'imageColumn' => $inst->imageColumn ?? null,
-                ]
-            ]);
-        } 
-        elseif($mediaAttr)
-        {
-            $data['type'] = 'media-picker';
+        if ($inst instanceof MediaPicker) {
             $data['collection'] = $inst->collection;
-        }else {
-            $data['type'] = $type;
-            $data['options'] = $inst->options ?? [];
+        } elseif (($inst->type ?? '') === 'media') {
+            $data['existing'] = $this->getExistingMedia($dataClass, $inst, $inputData);
+        } elseif ($inst instanceof Repeater) {
+            $data['dataClass'] = $inst->dataClass;
+            $data['addLabel'] = $inst->addLabel;
+            $data['titleKey'] = $inst->titleKey;
+            $data['schema'] = $this->getSchemaFromDataClass($inst->dataClass, $inputData[$name] ?? [], $isReadOnly);
+        } elseif ($inst instanceof LazySelect) {
+            $data['options'] = $this->getInitialLazyOptions($inst, $inputData[$name] ?? null);
+            $data['lazy'] = [
+                'model' => str_replace('\\', '\\\\', $inst->model), 
+                'labelColumn' => $inst->labelColumn, 
+                'valueColumn' => $inst->valueColumn,
+                'iconColumn' => $inst->iconColumn ?? null,
+                'imageColumn' => $inst->imageColumn ?? null,
+            ];
         }
 
         return $data;
+    }
+
+    protected function resolveSecondaryAttributes(ReflectionProperty $property): array
+    {
+        $data = [];
+        
+        $sectionAttr = $this->getAttributeInstance($property, Section::class);
+        if ($sectionAttr) {
+            $data['section'] = ['title' => $sectionAttr->title, 'description' => $sectionAttr->description, 'icon' => $sectionAttr->icon];
+        }
+
+        $visibleAttr = $this->getAttributeInstance($property, VisibleIf::class);
+        if ($visibleAttr) {
+            $data['visibleIf'] = ['field' => $visibleAttr->field, 'value' => $visibleAttr->value, 'operator' => $visibleAttr->operator ?? '='];
+        }
+
+        return $data;
+    }
+
+    protected function getExistingMedia(string $dataClass, object $inst, array $inputData): array
+    {
+        $modelClass = $this->getModelClass($dataClass);
+        $collection = $inst->options['collection'] ?? 'default';
+        
+        $model = isset($inputData['id']) ? $modelClass::find($inputData['id']) : null;
+
+        return $model ? $model->getMedia($collection)->map(fn($m) => [
+            'id' => $m->id,
+            'url' => $m->getUrl('thumb') ?: $m->getUrl(),
+            'name' => $m->file_name,
+        ])->toArray() : [];
+    }
+
+    /**
+     * Récupère l'attribut principal d'un champ
+     */
+    protected function getPrimaryAttribute(ReflectionProperty $property): ?object
+    {
+        $primaryClasses = [Field::class, Repeater::class, LazySelect::class, MediaPicker::class];
+        foreach ($primaryClasses as $class) {
+            $inst = $this->getAttributeInstance($property, $class);
+            if ($inst) return $inst;
+        }
+        return null;
+    }
+
+    protected function getAttributeInstance(ReflectionProperty $property, string $class): ?object
+    {
+        $attr = $property->getAttributes($class)[0] ?? null;
+        return $attr ? $attr->newInstance() : null;
+    }
+
+    protected function canView(object $inst): bool
+    {
+        $user = auth()->user();
+        return !isset($inst->permission) || empty($inst->permission) || ($user && $user->can($inst->permission));
+    }
+
+    protected function canEdit(object $inst): bool
+    {
+        $user = auth()->user();
+        return !isset($inst->editPermission) || empty($inst->editPermission) || ($user && $user->can($inst->editPermission));
     }
 
     /**
@@ -163,8 +191,12 @@ abstract class BaseFormService
             return $dataClass::MODEL;
         }
 
+        // Option additionnelle pour une interface ou une méthode existante
+        if (method_exists($dataClass, 'getModelClass')) {
+            return $dataClass::getModelClass();
+        }
+
         // Option 2 : Convention de nommage (ex: ClientData -> Client)
-        // On enlève 'Data' à la fin et on cherche dans le dossier App\Models
         $modelName = str_replace('Data', '', class_basename($dataClass));
         $guessedModel = "App\\Models\\" . $modelName;
 
@@ -172,8 +204,7 @@ abstract class BaseFormService
             return $guessedModel;
         }
 
-        // Fallback ou erreur si non trouvé
-        throw new \Exception("Impossible de trouver le modèle associé à $dataClass. Ajoutez 'public const MODEL = MonModele::class;' dans votre Data class.");
+        throw new Exception("Impossible de trouver le modèle associé à $dataClass. Ajoutez 'public const MODEL = MonModele::class;' dans votre Data class.");
     }
 
     protected function getSchemaFromDataClass(string $dataClass, array $repeaterRows = [], bool $parentReadOnly = false): array
@@ -194,16 +225,15 @@ abstract class BaseFormService
 
         $query = $attr->model::whereIn($attr->valueColumn, $values);
         
-        // On récupère toutes les colonnes nécessaires
         $columns = [$attr->valueColumn, $attr->labelColumn];
-        if ($attr->iconColumn) $columns[] = $attr->iconColumn;
-        if ($attr->imageColumn) $columns[] = $attr->imageColumn;
+        if ($attr->iconColumn ?? null) $columns[] = $attr->iconColumn;
+        if ($attr->imageColumn ?? null) $columns[] = $attr->imageColumn;
 
         return $query->get($columns)->mapWithKeys(function ($item) use ($attr) {
             return [$item->{$attr->valueColumn} => [
                 'label' => $item->{$attr->labelColumn},
-                'icon'  => $attr->iconColumn ? $item->{$attr->iconColumn} : null,
-                'image' => $attr->imageColumn ? $item->{$attr->imageColumn} : null,
+                'icon'  => ($attr->iconColumn ?? null) ? $item->{$attr->iconColumn} : null,
+                'image' => ($attr->imageColumn ?? null) ? $item->{$attr->imageColumn} : null,
             ]];
         })->toArray();
     }

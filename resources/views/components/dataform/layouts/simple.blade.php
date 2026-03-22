@@ -1,4 +1,3 @@
-{{-- resources/views/components/dataform/simple.blade.php --}}
 @props(['fields'])
 
 <div class="grid grid-cols-12 gap-x-6 gap-y-4">

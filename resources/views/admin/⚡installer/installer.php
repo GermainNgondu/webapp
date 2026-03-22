@@ -1,44 +1,42 @@
 <?php
 
+use App\Core\Framework\Support\DataForm\Services\AccordionFormService;
 use App\Core\Framework\Support\DataForm\Services\SimpleFormService;
 use App\Core\Framework\Support\DataForm\Services\TabsFormService;
 use App\Core\Framework\Support\DataForm\Services\WizardFormService;
 use App\Core\Framework\Support\DataForm\Traits\HasDynamicForm;
-use App\Core\Framework\Support\DataForm\Traits\ValidatesSpatieData;
-use App\Core\Installer\Data\ClientData;
-use App\Core\Installer\Data\InstallData;
+use App\Core\Installer\Data\{ClientData,InstallData,SettingsData,ProductData};
 use App\Models\Client;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
     
 new class extends Component {
-    use ValidatesSpatieData;
     use HasDynamicForm;
-    public array $form = [];
+
+    
     public $client;
+
+    public $t = 'simple';
+    
 
     /**
      * Optionnel : Initialiser les valeurs par défaut
      */
     public function mount()
     {
-        $this->edit(1);
+        $this->dataClass = ProductData::class;
+        $this->empty('product');
     }
     
-    public function simple()
+    public function builder(string $target)
     {
-        return SimpleFormService::init()->build(ClientData::class);
-    }
-
-    public function tabs()
-    {
-        return TabsFormService::init()->build(ClientData::class);
-    }
-
-    public function wizard()
-    {
-        return WizardFormService::init()->build(InstallData::class);
+        return match ($target) {
+            'accordion' => AccordionFormService::init()->build(SettingsData::class),
+            'tabs' => TabsFormService::init()->build(ClientData::class),
+            'wizard' => WizardFormService::init()->build(ClientData::class),
+            default => SimpleFormService::init()->build(ProductData::class),
+        };
     }
 
     public function save()
@@ -70,9 +68,14 @@ new class extends Component {
         }
     }
 
-    public function empty()
+    public function empty(string $model)
     {
-        $this->form = ClientData::empty();
+        $this->form = match ($model) {
+            'settings' => SettingsData::empty(),
+            'client' => ClientData::empty(),
+            'install' => InstallData::empty(),
+            'product'=> ProductData::empty(),
+        };
     }
 
     public function edit(int $id)

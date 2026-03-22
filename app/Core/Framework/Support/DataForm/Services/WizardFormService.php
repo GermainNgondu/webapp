@@ -14,35 +14,28 @@ class WizardFormService extends BaseFormService
     {
         $reflection = new ReflectionClass($dataClass);
         $steps = [];
-        $user = auth()->user();
 
-        foreach ($reflection->getProperties() as $property) {
+        foreach ($reflection->getProperties() as $property) 
+        {
             $stepAttr = $property->getAttributes(Step::class)[0] ?? null;
-            if (!$stepAttr) continue;
-
-            $stepInst = $stepAttr->newInstance();
-            $stepName = $stepInst->name;
-
-            if ($stepInst->permission && (!$user || !$user->can($stepInst->permission))) continue;
-
-            if (!isset($steps[$stepName])) {
-                $steps[$stepName] = [
-                    'meta' => [
-                        'name' => $stepName,
-                        'description' => $stepInst->description,
-                        'icon' => $stepInst->icon,
-                    ],
-                    'fields' => [],
-                    'validation_fields' => [] // Liste des noms de champs pour la validation
-                ];
-            }
-
-            $fieldData = $this->resolveField($property, $inputData);
             
-            if ($fieldData) {
-                $steps[$stepName]['fields'][] = $fieldData;
-                // On stocke le chemin complet pour Livewire (form.nom_du_champ)
-                $steps[$stepName]['validation_fields'][] = 'form.' . $property->getName();
+            if ($stepAttr) 
+            {
+                $instance = $stepAttr->newInstance();
+                $stepName = $instance->name;
+
+                if (!isset($steps[$stepName])) 
+                {
+                    $steps[$stepName] = [
+                        'title' => $stepName,
+                        'icon' => $instance->icon,
+                        'description' => $instance->description,
+                        'action'=> $instance->action,
+                        'fields' => []
+                    ];
+                }
+
+                $steps[$stepName]['fields'][] = $this->resolveField($property, $inputData);
             }
         }
 
