@@ -1,5 +1,5 @@
-<div class="max-w-3xl mx-auto py-2">
-
-    <x-dataform.form-builder :builder="$this->builder($t)" :layout="$t" />
-
+<div class="p-6">
+    <flux:heading size="xl">Gestion des Clients</flux:heading>
+    
+    <x-dataview.view :$view :$items :$schema />
 </div>

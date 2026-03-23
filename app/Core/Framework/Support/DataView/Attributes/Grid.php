@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Core\Framework\Support\DataView\Attributes;
+
+use Attribute;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class Grid {
+    public function __construct(
+        public string $position, // 'title', 'subtitle', 'description', 'badge', 'image', 'footer'
+        public ?string $icon = null,
+    ) {}
+}
