@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Core\Installer\Data;
+namespace App\Features\Posts\Data;
 
+use App\Core\Framework\Support\DataForm\Attributes\{Field,Blocks};
+use App\Core\Framework\Support\DataForm\Blocks\{HeroBlockData,QuoteBlockData,TextBlockData};
 use Spatie\LaravelData\Data;
-use App\Core\Framework\Support\DataForm\Attributes\{Field};
 
 class PostData extends Data
 {
@@ -15,7 +16,14 @@ class PostData extends Data
         #[Field(label: 'Statut', type: 'select', colSpan: 4, options: ['draft' => 'Brouillon', 'published' => 'Publié'])]
         public string $status = 'draft',
 
-        #[Field(label: 'Contenu de la page', type: 'blocks')]
+        #[Blocks(
+            allowedBlocks: [
+                HeroBlockData::class,
+                QuoteBlockData::class,
+                TextBlockData::class,
+            ],
+            label: 'Contenu de la page'
+        )]
         public array $content = [],
     ) {}
 }

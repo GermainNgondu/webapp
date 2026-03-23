@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Data\Blocks;
+namespace App\Core\Framework\Support\DataForm\Blocks;
 
 use Spatie\LaravelData\Data;
 use App\Core\Framework\Support\DataForm\Attributes\Field;
-use App\Core\Framework\Support\DataForm\Attributes\BlockConfig;
 
-#[BlockConfig(label: 'Citation', icon: 'chat-bubble-bottom-center-text', category: 'Contenu')]
 class QuoteBlockData extends Data {
     public function __construct(
         #[Field(label: 'La citation', type: 'text')]

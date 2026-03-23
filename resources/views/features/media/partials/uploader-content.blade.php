@@ -51,9 +51,9 @@
 
                 <div class="flex-1 overflow-y-auto p-8 pb-5 mt-5">
                     {{-- Source URL --}}
-                    @includeIf('admin.media.partials.uploader-tab-url')
+                    @includeIf('features.media.partials.uploader-tab-url')
                     {{-- Source Locale --}}
-                    @include('admin.media.partials.uploader-tab-local')
+                    @include('features.media.partials.uploader-tab-local')
                 </div>
 
             </div>  

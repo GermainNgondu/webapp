@@ -11,6 +11,7 @@ trait HasDynamicForm
     use HasFormMedia;
     use HasLazySelect;
     use HasRepeater;
+    use HasBlocks;
 
     public ?Model $model = null;
 

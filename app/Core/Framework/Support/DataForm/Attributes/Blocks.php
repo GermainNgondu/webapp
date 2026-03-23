@@ -8,6 +8,8 @@ use Attribute;
 class Blocks
 {
     public function __construct(
-        public array $allowed = [],
+        public array $allowedBlocks = [],
+        public ?string $label = null,
+        public string $placeholder = 'Ajouter un bloc',
     ) {}
 }

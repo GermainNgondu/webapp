@@ -4,7 +4,15 @@ namespace App\Core\Framework\Support\DataForm\Contracts;
 
 use ReflectionClass;
 use ReflectionProperty;
-use App\Core\Framework\Support\DataForm\Attributes\{Field, Repeater, VisibleIf, LazySelect, Section, MediaPicker};
+use App\Core\Framework\Support\DataForm\Attributes\{
+    Field, 
+    Repeater, 
+    VisibleIf, 
+    LazySelect, 
+    Section, 
+    MediaPicker, 
+    Blocks
+};
 
 abstract class BaseFormService
 {
@@ -36,8 +44,19 @@ abstract class BaseFormService
 
             if ($inst instanceof Repeater) {
                 $safeData[$name] = [];
-                foreach ($inputData[$name] as $key => $row) {
+                foreach (($inputData[$name] ?? []) as $key => $row) {
                     $safeData[$name][$key] = $this->secureData($inst->dataClass, $row);
+                }
+            } elseif ($inst instanceof Blocks) {
+                $safeData[$name] = [];
+                foreach (($inputData[$name] ?? []) as $key => $block) {
+                    $safeData[$name][$key] = [
+                        'type' => $block['type'] ?? 'unknown',
+                        'class' => $block['class'] ?? null,
+                        'data' => (isset($block['class']) && class_exists($block['class'])) 
+                            ? $this->secureData($block['class'], $block['data'] ?? []) 
+                            : ($block['data'] ?? []),
+                    ];
                 }
             } else {
                 $safeData[$name] = $inputData[$name];
@@ -55,9 +74,7 @@ abstract class BaseFormService
         if (!$inst) return null;
 
         // SÉCURITÉ D'AFFICHAGE
-        if (!$this->canView($inst)) {
-            return null;
-        }
+        if (!$this->canView($inst)) { return null; }
 
         $dataClass = $property->getDeclaringClass()->getName();
         $name = $property->getName();
@@ -66,9 +83,11 @@ abstract class BaseFormService
         $isReadOnly = $parentReadOnly || !$this->canEdit($inst);
 
         $type = $inst->type ?? 'text';
+
         if ($inst instanceof MediaPicker) $type = 'media-picker';
         if ($inst instanceof Repeater) $type = 'repeater';
         if ($inst instanceof LazySelect) $type = 'select';
+        if ($inst instanceof Blocks) $type = 'blocks';
 
         $data = [
             'name' => $name,
@@ -82,7 +101,6 @@ abstract class BaseFormService
             'options' => $inst->options ?? [],
             'rules' => $inst->rules ?? 'nullable',
         ];
-
         // Résolution de type spécifique (Media, Repeater, Lazy)
         $data = array_merge($data, $this->resolveTypeSpecificData($inst, $dataClass, $name, $inputData, $isReadOnly));
 
@@ -112,6 +130,15 @@ abstract class BaseFormService
                 'iconColumn' => $inst->iconColumn ?? null,
                 'imageColumn' => $inst->imageColumn ?? null,
             ];
+        } elseif ($inst instanceof Blocks) {
+            $data['allowedBlocks'] = collect($inst->allowedBlocks)->map(function ($blockClass) use ($inputData, $name, $isReadOnly) {
+                return [
+                    'class' => $blockClass,
+                    'type' => class_basename($blockClass),
+                    'schema' => $this->getSchemaFromDataClass($blockClass, $inputData[$name] ?? [], $isReadOnly),
+                ];
+            })->toArray();
+            $data['placeholder'] = $inst->placeholder ?? 'Ajouter un bloc';
         }
 
         return $data;
@@ -138,7 +165,13 @@ abstract class BaseFormService
      */
     protected function getPrimaryAttribute(ReflectionProperty $property): ?object
     {
-        $primaryClasses = [Field::class, Repeater::class, LazySelect::class, MediaPicker::class];
+        $primaryClasses = [
+            Field::class, 
+            Repeater::class, 
+            LazySelect::class, 
+            MediaPicker::class,
+            Blocks::class
+        ];
         foreach ($primaryClasses as $class) {
             $inst = $this->getAttributeInstance($property, $class);
             if ($inst) return $inst;
@@ -193,5 +226,44 @@ abstract class BaseFormService
                 'image' => ($attr->imageColumn ?? null) ? $item->{$attr->imageColumn} : null,
             ]];
         })->toArray();
+    }
+
+    /**
+ * Génère les données initiales d'un bloc à partir de son DTO.
+ */
+    public function getBlockDefaultData(string $blockClass): array
+    {
+        $reflection = new ReflectionClass($blockClass);
+        $defaults = [];
+
+        foreach ($reflection->getProperties() as $prop) {
+            // On vérifie si la propriété est un champ du formulaire (a un attribut Field, MediaPicker, etc.)
+            $inst = $this->getPrimaryAttribute($prop);
+            if (!$inst) continue;
+
+            // On initialise avec la valeur par défaut définie dans la classe PHP, 
+            // sinon avec une valeur vide selon le type.
+            if ($prop->hasDefaultValue()) {
+                $defaults[$prop->getName()] = $prop->getDefaultValue();
+            } else {
+                // Initialisation sécurisée pour éviter les erreurs Livewire/Alpine
+                $defaults[$prop->getName()] = $this->getDefaultValueForAttribute($inst);
+            }
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * Helper pour déterminer une valeur par défaut "safe" selon l'attribut.
+     */
+    protected function getDefaultValueForAttribute($inst): mixed
+    {
+        if ($inst instanceof Repeater || $inst instanceof Blocks) {
+            return [];
+        }
+        
+        // Tu peux ajouter des cas spécifiques ici (ex: boolean à false, etc.)
+        return null; 
     }
 }

@@ -6,9 +6,9 @@ use Livewire\WithPagination;
 use App\Features\Media\Models\MediaLibrary;
 use App\Features\Media\Actions\UploadMedia;
 use App\Features\Media\Actions\GetMediaAction;
-use Livewire\Attributes\On;
+use Livewire\Attributes\{On, Layout};
 
-new class extends Component
+new #[Layout('layouts::admin')] class extends Component
 {
     use WithFileUploads;
     use WithPagination;

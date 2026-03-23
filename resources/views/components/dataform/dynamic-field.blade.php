@@ -69,6 +69,9 @@
                         wire:model="{{ $model }}"
                     />
                     @break
+                @case('blocks')
+                    <x-dataform.fields.blocks :field="$field" {{ $attributes }} />
+                    @break
                 @default
                     <x-dataform.fields.text :field="$field" {{ $attributes }} />
             @endswitch 

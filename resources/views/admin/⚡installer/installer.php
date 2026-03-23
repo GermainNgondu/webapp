@@ -2,12 +2,13 @@
 
 use App\Core\Framework\Support\DataForm\Services\{AccordionFormService,FormService,SimpleFormService,TabsFormService,WizardFormService};
 use App\Core\Framework\Support\DataForm\Traits\HasDynamicForm;
-use App\Core\Installer\Data\{ClientData,InstallData, PostData,SettingsData,ProductData};
+use App\Core\Installer\Data\{ClientData,InstallData,SettingsData,ProductData};
 use App\Models\Client;
 use Livewire\Component;
-
+use Livewire\Attributes\Layout;
     
-new class extends Component {
+new #[Layout('layouts::admin')] class extends Component {
+    
     use HasDynamicForm;
 
     
@@ -21,8 +22,8 @@ new class extends Component {
      */
     public function mount()
     {
-        $this->dataClass = PostData::class;
-        $this->empty('post');
+        $this->dataClass = ClientData::class;
+        $this->empty('client');
     }
     
     public function builder(string $target)
@@ -74,7 +75,6 @@ new class extends Component {
             'client' => ClientData::empty(),
             'install' => InstallData::empty(),
             'product'=> ProductData::empty(),
-            'post'=> PostData::empty(),
         };
     }
 

@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Data\Blocks;
+namespace App\Core\Framework\Support\DataForm\Blocks;
 
 use Spatie\LaravelData\Data;
-use App\Core\Framework\Support\DataForm\Attributes\{Field,MediaPicker,BlockConfig};
+use App\Core\Framework\Support\DataForm\Attributes\{Field};
 
-#[BlockConfig(label: 'En-tête (Hero)', icon: 'presentation-chart-bar', category: 'Design', preview: 'previews/hero.png')]
 class HeroBlockData extends Data {
     public function __construct(
         #[Field(label: 'Titre principal', required: true)]
