@@ -3,12 +3,11 @@
 
 <div 
     x-data="{ isDirty: false }"
-    {{-- On peut écouter les changements sur le formulaire pour changer le style du bouton --}}
     @change.window="isDirty = true"
     class="sticky bottom-0 z-20 mt-8 -mx-6 px-6 py-4  backdrop-blur-md"
 >
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-        {{-- Statut (Optionnel) --}}
+
         <div class="flex items-center gap-2">
             <template x-if="isDirty">
                 <div class="flex items-center gap-2 text-amber-600 dark:text-amber-500">
@@ -27,6 +26,7 @@
                 <flux:button 
                     href="{{ $backUrl }}" 
                     variant="ghost"
+                    class="cursor-pointer"
                 >
                     Annuler
                 </flux:button>
@@ -37,7 +37,7 @@
                 variant="primary" 
                 wire:click="{{ $target }}"
                 wire:loading.attr="disabled"
-                class="min-w-[120px]"
+                class="min-w-[120px] cursor-pointer"
             >
                 {{-- Affichage du loader pendant la sauvegarde --}}
                 <span wire:loading.remove wire:target="{{ $target }}">

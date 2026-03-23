@@ -89,7 +89,7 @@ new #[Lazy] class extends Component
         @include('admin.media.partials.uploader-content')
     @else
         <flux:modal name="media-uploader-modal" class="md:w-6xl p-0 overflow-hidden">
-            @include('admin.media.partials.uploader-content')
+            @include('features.media.partials.uploader-content')
         </flux:modal>
     @endif
 </div>

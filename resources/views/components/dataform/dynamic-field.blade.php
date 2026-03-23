@@ -60,7 +60,9 @@
                     <x-dataform.fields.richtext :field="$field" {{ $attributes }} />
                     @break
                 @case('media-picker')
+                    
                     @php $model = "form.".$field['name']; @endphp
+
                     <x-dataform.fields.media-picker 
                         :field="$field"
                         :model="$this->getPropertyValue($model)"

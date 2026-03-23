@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 
 Route::livewire('/', 'admin::installer');
 
-Route::livewire('/media', 'admin::media.manager');
+Route::livewire('/media', 'features::media.manager');
 
 Route::get('/login-admin', function () {
     $user = User::whereEmail('admin@test.com')->first();

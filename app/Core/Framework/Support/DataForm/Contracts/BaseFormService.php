@@ -4,7 +4,6 @@ namespace App\Core\Framework\Support\DataForm\Contracts;
 
 use ReflectionClass;
 use ReflectionProperty;
-use Exception;
 use App\Core\Framework\Support\DataForm\Attributes\{Field, Repeater, VisibleIf, LazySelect, Section, MediaPicker};
 
 abstract class BaseFormService
@@ -97,9 +96,8 @@ abstract class BaseFormService
         $data = [];
 
         if ($inst instanceof MediaPicker) {
-            $data['collection'] = $inst->collection;
-        } elseif (($inst->type ?? '') === 'media') {
-            $data['existing'] = $this->getExistingMedia($dataClass, $inst, $inputData);
+            $data['collection'] = $inst->collection; 
+            
         } elseif ($inst instanceof Repeater) {
             $data['dataClass'] = $inst->dataClass;
             $data['addLabel'] = $inst->addLabel;
@@ -135,21 +133,6 @@ abstract class BaseFormService
 
         return $data;
     }
-
-    protected function getExistingMedia(string $dataClass, object $inst, array $inputData): array
-    {
-        $modelClass = $this->getModelClass($dataClass);
-        $collection = $inst->options['collection'] ?? 'default';
-        
-        $model = isset($inputData['id']) ? $modelClass::find($inputData['id']) : null;
-
-        return $model ? $model->getMedia($collection)->map(fn($m) => [
-            'id' => $m->id,
-            'url' => $m->getUrl('thumb') ?: $m->getUrl(),
-            'name' => $m->file_name,
-        ])->toArray() : [];
-    }
-
     /**
      * Récupère l'attribut principal d'un champ
      */
@@ -179,32 +162,6 @@ abstract class BaseFormService
     {
         $user = auth()->user();
         return !isset($inst->editPermission) || empty($inst->editPermission) || ($user && $user->can($inst->editPermission));
-    }
-
-    /**
-     * Détermine la classe du Modèle Eloquent lié à la classe Data.
-     */
-    protected function getModelClass(string $dataClass): string
-    {
-        // Option 1 : Vérifier si une constante 'MODEL' est définie dans votre Data Class
-        if (defined("$dataClass::MODEL")) {
-            return $dataClass::MODEL;
-        }
-
-        // Option additionnelle pour une interface ou une méthode existante
-        if (method_exists($dataClass, 'getModelClass')) {
-            return $dataClass::getModelClass();
-        }
-
-        // Option 2 : Convention de nommage (ex: ClientData -> Client)
-        $modelName = str_replace('Data', '', class_basename($dataClass));
-        $guessedModel = "App\\Models\\" . $modelName;
-
-        if (class_exists($guessedModel)) {
-            return $guessedModel;
-        }
-
-        throw new Exception("Impossible de trouver le modèle associé à $dataClass. Ajoutez 'public const MODEL = MonModele::class;' dans votre Data class.");
     }
 
     protected function getSchemaFromDataClass(string $dataClass, array $repeaterRows = [], bool $parentReadOnly = false): array

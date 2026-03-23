@@ -1,13 +1,9 @@
 <?php
 
-use App\Core\Framework\Support\DataForm\Services\AccordionFormService;
-use App\Core\Framework\Support\DataForm\Services\SimpleFormService;
-use App\Core\Framework\Support\DataForm\Services\TabsFormService;
-use App\Core\Framework\Support\DataForm\Services\WizardFormService;
+use App\Core\Framework\Support\DataForm\Services\{AccordionFormService,FormService,SimpleFormService,TabsFormService,WizardFormService};
 use App\Core\Framework\Support\DataForm\Traits\HasDynamicForm;
-use App\Core\Installer\Data\{ClientData,InstallData,SettingsData,ProductData};
+use App\Core\Installer\Data\{ClientData,InstallData, PostData,SettingsData,ProductData};
 use App\Models\Client;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
     
@@ -25,27 +21,28 @@ new class extends Component {
      */
     public function mount()
     {
-        $this->dataClass = ProductData::class;
-        $this->empty('product');
+        $this->dataClass = PostData::class;
+        $this->empty('post');
     }
     
     public function builder(string $target)
     {
+
         return match ($target) {
             'accordion' => AccordionFormService::init()->build(SettingsData::class),
             'tabs' => TabsFormService::init()->build(ClientData::class),
             'wizard' => WizardFormService::init()->build(ClientData::class),
-            default => SimpleFormService::init()->build(ProductData::class),
+            default => SimpleFormService::init()->build($this->dataClass),
         };
     }
 
     public function save()
     {  
         // Nettoyage récursif selon les permissions Spatie
-        $safeData = TabsFormService::init()->secureData(ClientData::class,$this->form);
+        $safeData = FormService::init()->secureData($this->dataClass,$this->form);
 
         // Validation Spatie Data
-        $data = $this->validateData(ClientData::class, $safeData);
+        $data = $this->validateData($this->dataClass, $safeData);
 
         if($this->client)
         {
@@ -77,6 +74,7 @@ new class extends Component {
             'client' => ClientData::empty(),
             'install' => InstallData::empty(),
             'product'=> ProductData::empty(),
+            'post'=> PostData::empty(),
         };
     }
 

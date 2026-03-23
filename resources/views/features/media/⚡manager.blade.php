@@ -92,5 +92,5 @@ new class extends Component
             </flux:card>
         @endforeach
     </div>
-    <livewire:admin::media.uploader />
+    <livewire:features::media.uploader />
 </div>

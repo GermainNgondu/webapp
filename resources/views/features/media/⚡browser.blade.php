@@ -76,7 +76,7 @@ public $targetProperty; // La propriété du formulaire à mettre à jour
 
                 {{-- Vue Upload --}}
                 <div x-show="view === 'upload'" class="flex-1 overflow-hidden">
-                    <livewire:admin::media.uploader :browser="true"/>
+                    <livewire:features::media.uploader :browser="true"/>
                 </div>
             </div>
         </div>

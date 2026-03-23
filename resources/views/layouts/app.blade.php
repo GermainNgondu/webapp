@@ -87,7 +87,7 @@
             {{ $slot }}
         </flux:main>
 
-        <livewire:admin::media.browser/>
+        <livewire:features::media.browser/>
         <x-notification />
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
