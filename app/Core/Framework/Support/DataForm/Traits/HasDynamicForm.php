@@ -10,6 +10,7 @@ trait HasDynamicForm
     use HasWizardForm;
     use HasFormMedia;
     use HasLazySelect;
+    use HasRepeater;
 
     public ?Model $model = null;
 
