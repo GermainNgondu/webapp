@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Media\Models;
+namespace App\Features\Media\Domain\Models;
 
 use App\Features\Media\Support\Enums\MediaSource;
 use App\Features\Media\Support\Enums\MediaType;

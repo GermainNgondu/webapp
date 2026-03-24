@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Media\Models;
+namespace App\Features\Media\Domain\Models;
 
 use App\Features\Media\Support\Path\MediaCustomPathGenerator;
 use Illuminate\Database\Eloquent\Model;

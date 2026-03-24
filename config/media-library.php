@@ -1,6 +1,6 @@
 <?php
 
-use App\Features\Media\Models\Media;
+use App\Features\Media\Domain\Models\Media;
 use App\Features\Media\Support\Path\MediaCustomPathGenerator;
 use Spatie\MediaLibrary\MediaCollections\Models\Observers\MediaObserver;
 

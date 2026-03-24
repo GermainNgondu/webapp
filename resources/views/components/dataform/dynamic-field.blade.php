@@ -41,6 +41,9 @@
     <div x-show="{{ $xShow }}" x-cloak x-transition>
 
             @switch($field['type'])
+            @case('checkbox')
+                <x-dataform.fields.checkbox :field="$field" {{ $attributes }} />
+            @break
                 @case('select')
                     <x-dataform.fields.select :field="$field" {{ $attributes }} />
                     @break

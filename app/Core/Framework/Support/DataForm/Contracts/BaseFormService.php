@@ -11,7 +11,8 @@ use App\Core\Framework\Support\DataForm\Attributes\{
     LazySelect, 
     Section, 
     MediaPicker, 
-    Blocks
+    Blocks,
+    FormConfig
 };
 
 abstract class BaseFormService
@@ -229,8 +230,8 @@ abstract class BaseFormService
     }
 
     /**
- * Génère les données initiales d'un bloc à partir de son DTO.
- */
+     * Génère les données initiales d'un bloc à partir de son DTO.
+     */
     public function getBlockDefaultData(string $blockClass): array
     {
         $reflection = new ReflectionClass($blockClass);
@@ -262,8 +263,69 @@ abstract class BaseFormService
         if ($inst instanceof Repeater || $inst instanceof Blocks) {
             return [];
         }
-        
-        // Tu peux ajouter des cas spécifiques ici (ex: boolean à false, etc.)
         return null; 
+    }
+
+    /**
+     * Récupère la configuration globale du formulaire (Titre, Layout, Action).
+     */
+    public function getFormConfig(string $dataClass): array
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $attr = $reflection->getAttributes(FormConfig::class)[0] ?? null;
+
+        if (!$attr) {
+            return [
+                'title' => class_basename($dataClass),
+                'layout' => 'simple',
+                'saveLabel' => 'save',
+                'action' => null,
+                'model'=> null,
+                'successMessage' => 'Opération réussie !',
+                'errorMessage' => 'Une erreur est survenue lors du traitement.',
+            ];
+        }
+
+        $config = $attr->newInstance();
+
+        return [
+            'title'       => $config->title,
+            'description' => $config->description,
+            'layout'      => $config->layout,
+            'action'      => $config->action,
+            'model'       => $config->model,
+            'saveLabel'   => $config->saveLabel,
+            'icon'        => $config->icon,
+            'redirect'    => $config->redirect,
+            'successMessage' => $config->successMessage,
+            'errorMessage' => $config->errorMessage,
+        ];
+    }
+
+    /**
+     * Récupère la classe du modèle associé à la classe Data.
+     * @param string $dataClass
+     * @throws \Exception
+     * @return string
+     */
+    protected function getModelClass(string $dataClass): string
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $attr = $reflection->getAttributes(FormConfig::class)[0] ?? null;
+        
+        if ($attr) {
+            $config = $attr->newInstance();
+            // Priorité 1 : L'attribut FormConfig
+            if ($config->model) {
+                return $config->model;
+            }
+        }
+
+        // Priorité 2 : La constante MODEL dans la classe Data
+        if (defined("$dataClass::MODEL")) {
+            return $dataClass::MODEL;
+        }
+
+        throw new \Exception("Impossible de trouver le modèle associé à $dataClass.");
     }
 }

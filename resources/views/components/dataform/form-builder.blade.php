@@ -14,8 +14,9 @@
     @change.window="isDirty = true"
     @form-saved.window="isDirty = false"
     @keydown.window.prevent.ctrl.s="$wire.save()" @keydown.window.prevent.cmd.s="$wire.save()">
+    
     <form  wire:submit.prevent="save" {{ $attributes }}>
-
+        @csrf
         @if($layout === 'accordion')
             <x-dataform.layouts.accordion :sections="$builder" />
         @elseif($layout === 'tabs')

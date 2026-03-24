@@ -4,6 +4,7 @@
     $name = "form." . $field['name'];
     $isReadOnly = $field['readonly'] ?? false;
     $options = $field['options'] ?? [];
+    $forgotUrl = $field['options']['forgot_url'] ?? null;
 
     // Configuration par défaut extraite des options du champ
     $config = [
@@ -17,8 +18,20 @@
 
 <flux:field {{ $attributes }}>
     
-    <x-dataform.fields.label :field="$field" />
+    <div class="flex justify-between items-end mb-2">
+        <x-dataform.fields.label :field="$field" />
 
+        @if($forgotUrl)
+            <flux:link 
+                href="{{ $forgotUrl }}" 
+                variant="subtle" 
+                class="text-xs font-medium"
+                wire:navigate {{-- Pour une navigation fluide sans rechargement --}}
+            >
+                Mot de passe oublié ?
+            </flux:link>
+        @endif
+    </div>
     <div x-data="{
         show: false,
         value: @entangle($name),

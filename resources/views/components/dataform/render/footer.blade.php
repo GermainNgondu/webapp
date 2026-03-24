@@ -1,5 +1,5 @@
 {{-- resources/views/components/dataform/footer.blade.php --}}
-@props(['target' => 'save', 'backUrl' => null])
+@props(['target' => 'save','saveLabel'=> 'save', 'backUrl' => null])
 
 <div 
     x-data="{ isDirty: false }"
@@ -41,7 +41,7 @@
             >
                 {{-- Affichage du loader pendant la sauvegarde --}}
                 <span wire:loading.remove wire:target="{{ $target }}">
-                    Enregistrer les modifications
+                    {{ ucfirst($saveLabel) }}
                 </span>
                 
                 <span wire:loading wire:target="{{ $target }}" class="flex items-center gap-2">
