@@ -4,6 +4,7 @@ namespace App\Core\Admin\Providers;
 
 use App\Core\Admin\Console\Commands\{AdminCacheCommand, AdminClearCommand};
 use App\Core\Admin\Support\Discovery\FeatureDiscovery;
+use App\Core\Framework\Data\NavigationItemData;
 use App\Core\Framework\Managers\LayoutManager;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -29,9 +30,10 @@ class AdminServiceProvider extends ServiceProvider
         }
     }
 
-    public function boot(): void
+    public function boot(LayoutManager $layout): void
     {
         $this->mapRoutes();
+        $this->loadRoutesFrom(__DIR__.'/../Http/Routes/admin.php');
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'admin');
         
         // Enregistrement de la commande
@@ -41,6 +43,13 @@ class AdminServiceProvider extends ServiceProvider
                 AdminClearCommand::class,
             ]);
         }
+
+         $layout->addPrimary(new NavigationItemData(
+            label: 'Dashboard',
+            route: 'dashboard',
+            icon: 'layout-dashboard',
+            order: 1,
+        ));
     }
 
     protected function loadCache(): void

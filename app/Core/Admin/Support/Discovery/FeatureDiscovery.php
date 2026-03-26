@@ -12,7 +12,7 @@ class FeatureDiscovery
     public static function discoverProviders(): array
     {
         $providers = [];
-        $featuresPath = app_path('features');
+        $featuresPath = app_path('Features');
 
         if (!File::isDirectory($featuresPath)) return [];
 
@@ -22,7 +22,8 @@ class FeatureDiscovery
 
             if (File::isDirectory($pPath)) {
                 foreach (File::files($pPath) as $file) {
-                    $class = "Features\\{$moduleName}\\Providers\\" . $file->getBasename('.php');
+                    $class = "App\\Features\\{$moduleName}\\Providers\\" . $file->getBasename('.php');
+
                     if (class_exists($class)) {
                         $providers[] = $class;
                     }

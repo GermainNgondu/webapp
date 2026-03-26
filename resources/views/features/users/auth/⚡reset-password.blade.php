@@ -68,7 +68,7 @@ new #[Layout('admin::layouts.auth')] class extends Component
     <flux:subheading>Choisissez un mot de passe robuste pour sécuriser votre compte.</flux:subheading>
 
     <form wire:submit="save" class="mt-5">
-        <x-dataform.layouts.simple :fields="$this->fields()" />
+        <x-core::dataform.layouts.simple :fields="$this->fields()" />
         <div class="mt-6 flex justify-end">
             <flux:button type="submit" variant="primary" class="cursor-pointer">Mettre à jour le mot de passe</flux:button>
         </div>

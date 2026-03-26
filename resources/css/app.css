@@ -1,6 +1,8 @@
 @import 'dropzone/dist/dropzone.css';
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import 'flatpickr/dist/flatpickr.css';
+@import 'flatpickr/dist/themes/dark.css';
 
 
 

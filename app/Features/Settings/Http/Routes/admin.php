@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::livewire('/settings', 'features::settings');
+Route::livewire('/settings', 'features::settings')->name('index');

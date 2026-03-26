@@ -8,7 +8,7 @@ use App\Features\Media\Actions\UploadMedia;
 use App\Features\Media\Actions\GetMediaAction;
 use Livewire\Attributes\{On, Layout};
 
-new #[Layout('layouts::admin')] class extends Component
+new #[Layout('admin::layouts.admin')] class extends Component
 {
     use WithFileUploads;
     use WithPagination;
@@ -51,7 +51,7 @@ new #[Layout('layouts::admin')] class extends Component
 };
 ?>
 
-<div class="p-6 space-y-8">
+<div class="space-y-8">
     <div class="flex items-center justify-between">
         <flux:heading size="xl" level="1">Gestionnaire de Médias</flux:heading>
         

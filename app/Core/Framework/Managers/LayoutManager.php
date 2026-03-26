@@ -48,4 +48,9 @@ class LayoutManager
     public function getSearchAlias(): ?string {
         return $this->searchAlias;
     }
+
+    public function getCurrentLayout(): string
+    {
+        return config('core.layout');
+    }
 }

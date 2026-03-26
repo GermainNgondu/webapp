@@ -12,10 +12,6 @@ class SettingsServiceProvider extends ServiceProvider
     {
 
         $modulePath = __DIR__ . '/..';
-
-        if (file_exists($modulePath . '/Http/Routes/web.php')) {
-            $this->loadRoutesFrom($modulePath . '/Http/Routes/web.php');
-        }
         
         if (is_dir($modulePath . '/Resources/views')) {
             $this->loadViewsFrom($modulePath . '/Resources/views', 'settings');

@@ -8,8 +8,8 @@ class BrandData extends Data
 {
     public function __construct(
         public string $name,
-        public ?string $logoUrl = null,
+        public ?string $logoUrl = '/core/files/images/favicon.ico',
         public ?string $darkModeLogoUrl = null,
-        public string $homeRoute = 'admin.dashboard.index', // Where the logo click leads
+        public string $homeRoute = 'dashboard',
     ) {}
 }

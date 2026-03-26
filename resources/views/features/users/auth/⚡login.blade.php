@@ -14,6 +14,6 @@ new #[Layout('admin::layouts.auth')] class extends Component
 ?>
 
 <div>
-    <livewire:dataform.form :dataClass="$this->dataClass" />
+    <livewire:form :dataClass="$this->dataClass" />
 </div>
 

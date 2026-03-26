@@ -3,7 +3,7 @@
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Lazy;
-use App\Features\Media\Dmain\Models\MediaLibrary;
+use App\Features\Media\Domain\Models\MediaLibrary;
 use App\Features\Media\Actions\{UploadMedia, UploadMediaFromUrl, CleanTemporaryFilesAction};
 
 new #[Lazy] class extends Component
