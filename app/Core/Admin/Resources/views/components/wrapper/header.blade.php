@@ -33,6 +33,9 @@
             @foreach($layout->getUserMenu() as $item)
                 <flux:menu.item :icon="$item->icon" :href="route($item->route)">{{ $item->label }}</flux:menu.item>
             @endforeach
+            <flux:menu.item icon="sun-moon">
+                <x-admin::theme-switch format="switch"/>
+            </flux:menu.item>
             <flux:menu.separator />
             <flux:menu.item icon="arrow-right-start-on-rectangle" :href="route('admin.users.logout')" class="capitalize">
                 {{ __('logout') }}
@@ -67,7 +70,7 @@
 </flux:sidebar>
 
 <flux:main>
-    <div class="max-w-7xl mx-auto py-2">
+    <div class="max-w-7xl mx-auto">
         {{ $slot }}
     </div>
 </flux:main>

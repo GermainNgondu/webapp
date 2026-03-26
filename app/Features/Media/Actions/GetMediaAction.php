@@ -2,37 +2,19 @@
 
 namespace App\Features\Media\Actions;
 
-use App\Features\Media\Domain\Data\MediaData;
 use App\Features\Media\Domain\Models\Media;
-use Lorisleiva\Actions\Concerns\AsAction;
-use Spatie\LaravelData\DataCollection;
+use App\Features\Media\Domain\Data\MediaData;
+use App\Core\Framework\Support\DataView\Contracts\BaseDataViewAction;
 
-class GetMediaAction
+class GetMediaAction extends BaseDataViewAction
 {
-    use AsAction;
-
-    /**
-     * @return DataCollection<MediaData>
-     */
-    public function handle(?string $search = null, ?string $type = null): mixed
+    protected function getModel(): string 
     {
-        $query = Media::query()->latest();
+        return Media::class; 
+    }
 
-        // Filtre par recherche (Nom ou Nom de fichier)
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('file_name', 'like', "%{$search}%");
-            });
-        }
-
-        // Filtre par type (ex: 'video' ou 'image')
-        if ($type === 'video') {
-            $query->where('custom_properties->is_video', true);
-        } elseif ($type === 'image') {
-            $query->where('mime_type', 'like', 'image/%');
-        }
-
-        return MediaData::collect($query->paginate(10));
+    protected function getDataClass(): string 
+    {
+        return MediaData::class; 
     }
 }

@@ -19,9 +19,9 @@ trait HasDataView
     #[Url(history: true)]
     public array $filters = [];
 
-    #[Url(history: true)]
+    #[Url()]
     public string $view = 'table';
-    #[Url(history: true)]
+
     public int $perPage = 10;
     public array $schema = [];
 
@@ -127,5 +127,13 @@ trait HasDataView
             'global' => array_values(array_filter($allActions, fn($a) => ($a['isGlobal'] ?? false))),
             'row'    => array_values(array_filter($allActions, fn($a) => !($a['isGlobal'] ?? false))),
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function paginationView(): string
+    {
+        return 'components.pagination.pagination';
     }
 }

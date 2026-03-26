@@ -1,8 +1,8 @@
 @props(['schema'])
 
-<div class="flex flex-wrap gap-4 items-end mb-6">
+<div class="flex flex-wrap gap-4 items-end">
     @foreach($schema as $field => $config)
-        <div class="w-full md:w-48">
+        <div class="w-full md:w-54 inline-flex mb-0.5 gap-2">
             <flux:label>{{ $config['label'] }}</flux:label>
 
             @if($config['type'] === 'text')

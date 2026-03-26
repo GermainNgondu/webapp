@@ -1,7 +1,7 @@
 @props(['items', 'schema', 'actions' => []])
 
-<flux:table>
-    <flux:table.columns>
+<flux:table container:class="max-h-[calc(100vh-150px)]">
+    <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
         @foreach($schema as $field => $config)
             <flux:table.column 
                 :sortable="$config['sortable'] ?? false"

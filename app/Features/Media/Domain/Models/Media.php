@@ -41,8 +41,14 @@ class Media extends BaseMedia
      */
     public function getTypeAttribute(): MediaType
     {
-        if ($this->getCustomProperty('source') === MediaSource::YOUTUBE->value) {
-            return MediaType::YOUTUBE;
+        $source = $this->getCustomProperty('source');
+        if ($source) {
+            return match ($source) {
+                 MediaSource::YOUTUBE->value => MediaType::YOUTUBE,
+                 MediaSource::VIMEO->value => MediaType::VIMEO,
+                 MediaSource::DAILYMOTION->value => MediaType::DAILYMOTION,
+                 default => MediaType::OTHER,
+            };
         }
 
         $mime = $this->mime_type;

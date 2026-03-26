@@ -8,8 +8,8 @@ use Attribute;
 class DataAction {
     public function __construct(
         public string $name,           
-        public string $label,          
-        public string $icon,           
+        public ?string $label = null,          
+        public ?string $icon = null,           
         public bool $isGlobal = false, 
         public string $variant = 'ghost',
         public ?string $color = null,

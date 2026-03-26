@@ -9,5 +9,6 @@ class Grid {
     public function __construct(
         public string $position, // 'title', 'subtitle', 'description', 'badge', 'image', 'footer'
         public ?string $icon = null,
+        public ?string $component = null,
     ) {}
 }
