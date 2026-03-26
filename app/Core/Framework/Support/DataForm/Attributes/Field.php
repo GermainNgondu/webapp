@@ -8,7 +8,7 @@ use Attribute;
 class Field
 {
     public function __construct(
-        public string $label, 
+        public ?string $label = null, 
         public int $colSpan = 12,           
         public ?string $type = null,
         public ?string $placeholder = null,

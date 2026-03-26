@@ -5,7 +5,7 @@ use Livewire\Attributes\{On, Lazy};
 use App\Features\Media\Actions\GetMediaAction;
 
 
-new #[Lazy]class extends Component
+new #[Lazy] class extends Component
 {
 public $targetProperty; // La propriété du formulaire à mettre à jour
     public $isOpen = false;

@@ -1,32 +1,77 @@
 <?php
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
+use App\Features\Users\Actions\Auth\ResetPasswordAction;
+use App\Features\Users\Domain\Data\Auth\ResetPasswordData;
+use Illuminate\Validation\ValidationException;
+use App\Core\Framework\Support\DataForm\Traits\HasFormFields;
+use App\Core\Framework\Support\DataForm\Services\SimpleFormService;
 
-new class extends Component
+new #[Layout('admin::layouts.auth')] class extends Component
 {
-    //
+    use HasFormFields;
+
+    /**
+     * Initialisation du composant avec les données de l'URL
+     */
+    public function mount()
+    {
+        $this->dataClass = ResetPasswordData::class;
+
+        $this->form = [
+            'token' => request()->query('token', ''),
+            'email' => request()->query('email', ''),
+            'password' => '',
+            'password_confirmation' => '',
+        ];
+    }
+
+    public function fields()
+    {
+        return SimpleFormService::init()->build($this->dataClass);
+    }
+
+    /**
+     * Traitement du formulaire
+     */
+    public function save()
+    {
+        // 1. Préparation des données via le DTO (Auto-validation incluse)
+        try {
+                $safeData = SimpleFormService::init()->secureData($this->dataClass,$this->form);
+                $data = $this->validateData($this->dataClass, $safeData);
+
+                // 2. Appel de l'Action métier
+                app(ResetPasswordAction::class)->handle($data);
+
+                // 3. Redirection avec message flash de succès
+                $this->dispatch('notify', 
+                    message: __('Votre mot de passe a été réinitialisé !'), 
+                    variant: 'success'
+                );
+                
+                return redirect()->route('login');
+
+        } catch (ValidationException $e) {
+            // On renvoie les erreurs de validation au formulaire
+            foreach ($e->errors() as $key => $messages) {
+                $this->addError($key, $messages[0]);
+            }
+        }
+    }
 };
 ?>
 
 <div>
-    <flux:card class="max-w-md mx-auto mt-20">
-        <flux:heading size="lg">Nouveau mot de passe</flux:heading>
-        <flux:subheading>Choisissez un mot de passe robuste pour sécuriser votre compte.</flux:subheading>
+    <flux:heading size="lg">Nouveau mot de passe</flux:heading>
+    <flux:subheading>Choisissez un mot de passe robuste pour sécuriser votre compte.</flux:subheading>
 
-        <form action="{{ route('password.update') }}" method="POST" class="mt-6 space-y-4">
-            @csrf
-            <input type="hidden" name="token" value="{{ $token }}">
-            
-            <flux:input label="Email" type="email" name="email" :value="request()->email" required />
+    <form wire:submit="save" class="mt-5">
+        <x-dataform.layouts.simple :fields="$this->fields()" />
+        <div class="mt-6 flex justify-end">
+            <flux:button type="submit" variant="primary" class="cursor-pointer">Mettre à jour le mot de passe</flux:button>
+        </div>
+    </form>
 
-            <div class="grid grid-cols-1 gap-4">
-                <flux:input label="Nouveau mot de passe" type="password" name="password" viewable required />
-                <flux:input label="Confirmer le mot de passe" type="password" name="password_confirmation" required />
-            </div>
-
-            <flux:button type="submit" variant="primary" class="w-full">
-                Mettre à jour le mot de passe
-            </flux:button>
-        </form>
-    </flux:card>
 </div>

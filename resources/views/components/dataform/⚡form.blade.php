@@ -1,128 +1,20 @@
 <?php
 
-use App\Core\Framework\Support\DataForm\Services\{ 
-    AccordionFormService, 
-    TabsFormService, 
-    WizardFormService, 
-    SimpleFormService,
-    FormService,
-};
-
 use Livewire\Component;
-use Illuminate\Validation\ValidationException;
-use App\Core\Framework\Support\DataForm\Traits\HasDynamicForm;
+use App\Core\Framework\Support\DataForm\Traits\HasForm;
+use Livewire\Attributes\Lazy;
 
-new class extends Component
+
+new #[Lazy] class extends Component
 {
-    use HasDynamicForm;
-
-    public array $config = [];
-    public array $builder = [];
-    public string $layout ='simple';
-
-    public function mount(string|int $id = null)
-    {
-        // On récupère la config globale (layout, titre, action...)
-        $this->config = app(FormService::class)->getFormConfig($this->dataClass);
-
-        $this->layout = $this->config['layout'] ?? 'simple';
-
-        // le service de build selon le layout
-        $service = match($this->layout) {
-            'accordion'=> app(AccordionFormService::class),
-            'wizard' => app(WizardFormService::class),
-            'tabs' => app(TabsFormService::class),
-            default  => app(SimpleFormService::class),
-        };
-
-        $model = $this->config['model'] ?? null;
-
-        $this->formData($model,$id);
-        //les champs
-        $this->builder = $service->build($this->dataClass, $this->form);
-    }
-
-    public function formData(string $model = null, string|int $id = null): void
-    {
-        $data = [];
-
-        if($model && $id)
-        {  
-            $data = ($this->dataClass)::from($model::find($id))->toArray();
-        }
-        else
-        {
-            try 
-            {
-                $data = ($this->dataClass)::empty();
-
-            } catch (\Throwable $th) {
-                //throw $th;
-            }
-        }
-
-        $this->form = $data;
-    }
-
-    public function save()
-    {
-        $this->resetErrorBag();
-
-        try {
-
-            // Nettoyage récursif selon les permissions Spatie
-            $safeData = FormService::init()->secureData($this->dataClass,$this->form);
-
-            // Validation Spatie Data
-            $data = $this->validateData($this->dataClass, $safeData);
-            if ($this->config['action']) {
-                app($this->config['action'])->run($data->toArray());
-            }
-            
-            // Succès : Notification Flux
-           $this->dispatch('notify', 
-                message: $this->config['successMessage'], 
-                variant: 'success'
-            );
-
-            if ($this->config['redirect']) {
-            
-                if (str_starts_with($this->config['redirect'], 'intended:')) {
-
-                    $fallback = str_replace('intended:', '', $this->config['redirect']);
-                    
-                    return redirect()->intended($fallback);
-                }
-
-                if ($this->config['redirect'] === 'refresh') {
-                    return $this->redirect(request()->header('Referer'));
-                }
-                
-                return redirect($this->config['redirect']);
-            }
-
-
-        }catch (ValidationException $e) {
-            throw ValidationException::withMessages(
-                collect($e->errors())
-                    ->mapWithKeys(fn ($messages, $key) => ["form.{$key}" => $messages])
-                    ->all()
-            );
-
-        } catch (\Exception $e) {
-            $this->addError('form_global', $e->getMessage());
-            $this->dispatch('notify', 
-                message: $this->config['errorMessage'] ?? 'Une erreur est survenue', 
-                variant: 'error'
-            );
-        }
-    }
+   use HasForm;
 };
 ?>
 
 <div class="space-y-6">
     {{-- Header --}}
-    <x-ui.alert/>
+    <x-ui.alert :message="$errors->first('form_global')" type="error"/>
+    
     <div class="flex flex-col items-center gap-4">
         @if($config['icon'])
             <flux:icon :name="$config['icon']" class="h-6 w-6 text-zinc-600" />
@@ -133,6 +25,11 @@ new class extends Component
         </div>
     </div>
 
+    @placeholder
+    <div class="flex items-center justify-center">
+        <flux:icon.loading />
+    </div>
+    @endplaceholder
     <form  wire:submit.prevent="save" {{ $attributes }}>
 
         @csrf

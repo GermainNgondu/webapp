@@ -3,7 +3,7 @@
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Lazy;
-use App\Features\Media\Models\MediaLibrary;
+use App\Features\Media\Dmain\Models\MediaLibrary;
 use App\Features\Media\Actions\{UploadMedia, UploadMediaFromUrl, CleanTemporaryFilesAction};
 
 new #[Lazy] class extends Component
@@ -77,12 +77,6 @@ new #[Lazy] class extends Component
     }
 };
 ?>
-
-@placeholder
-    <div >
-        <flux:icon.loading />
-    </div>
-@endplaceholder
 
 <div>
     @if ($browser)

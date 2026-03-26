@@ -18,7 +18,7 @@
         </div>
         <div class="flex flex-col justify-center py-10 sm:px-6 lg:px-8">
             <div class="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
-                <x-admin::brand :brand="$layout->getBrand()" class="mb-6" show-name />
+                <x-admin::brand :brand="$layout->getBrand()" class="mb-6"/>
             </div>
             <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-[480px]">
                 <flux:card class="px-6 py-10 sm:px-12 border-zinc-200 dark:border-zinc-800">

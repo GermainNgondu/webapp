@@ -5,7 +5,7 @@ namespace App\Core\Framework\Support\DataForm\Traits;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
-trait HasDynamicForm
+trait HasFormFields
 {
     use HasWizardForm;
     use HasFormMedia;

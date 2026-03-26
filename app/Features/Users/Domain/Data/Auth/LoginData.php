@@ -23,7 +23,7 @@ class LoginData extends Data
             label: 'Adresse Email', 
             type: 'email', 
             required: true, 
-            rules: 'required|email',
+            rules: 'email',
             colSpan: 12
         )]
         public string $email,
@@ -31,7 +31,6 @@ class LoginData extends Data
             label: 'Mot de passe', 
             type: 'password', 
             required: true, 
-            rules: 'required',
             colSpan: 12,
             options: [
                 'forgot_url' => '/admin/forgot-password'

@@ -2,6 +2,7 @@
 
 namespace App\Features\Users\Domain\Data\Auth;
 
+use App\Core\Framework\Support\DataForm\Attributes\Field;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -9,9 +10,34 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 class ResetPasswordData extends Data
 {
     public function __construct(
+        #[Field(type: 'hidden')]
         public string $token,
+        #[Field(
+            label: 'Email', 
+            type: 'email', 
+            required: true, 
+            rules: 'email',
+            colSpan: 12
+        )]
         public string $email,
+        #[Field(
+            label: 'Mot de passe', 
+            type: 'password',
+            required: true,
+            options: [
+                'showStrength' => true,
+                'minLength' => 8,
+                'useUpper' => true,
+                'useNumbers' => true,
+                'useSpecial' => true
+            ]
+        )]
         public string $password,
+        #[Field(
+            label: 'Confirmer le mot de passe', 
+            type: 'password',
+            required: true,
+        )]
         public string $password_confirmation,
     ) {}
 

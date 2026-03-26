@@ -3,7 +3,7 @@
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use App\Features\Media\Models\MediaLibrary;
+use App\Features\Media\Domain\Models\MediaLibrary;
 use App\Features\Media\Actions\UploadMedia;
 use App\Features\Media\Actions\GetMediaAction;
 use Livewire\Attributes\{On, Layout};
