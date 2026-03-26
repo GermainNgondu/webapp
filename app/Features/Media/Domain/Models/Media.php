@@ -5,15 +5,37 @@ namespace App\Features\Media\Domain\Models;
 use App\Features\Media\Support\Enums\MediaSource;
 use App\Features\Media\Support\Enums\MediaType;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\MediaLibrary\MediaCollections\Models\Media as SpatieMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
 
-class Media extends SpatieMedia
+class Media extends BaseMedia
 {
     use SoftDeletes;
 
     protected $appends = ['url', 'thumb_url', 'size_human', 'type', 'source'];
+    /**
+     * Détermine si le média est une vidéo distante (YouTube/Vimeo/etc)
+     */
+    public function isVideo(): bool
+    {
+        return (bool) $this->getCustomProperty('is_video', false);
+    }
 
+    /**
+     * Récupère l'URL de la vidéo originale
+     */
+    public function getVideoUrl(): ?string
+    {
+        return $this->getCustomProperty('video_url');
+    }
+
+    /**
+     * Récupère le nom du fournisseur (youtube, vimeo...)
+     */
+    public function getVideoProvider(): ?string
+    {
+        return $this->getCustomProperty('video_provider');
+    }
     /**
      * Détermine le type de média (image, video, etc.) pour l'affichage.
      */

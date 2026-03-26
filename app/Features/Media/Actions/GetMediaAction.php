@@ -2,48 +2,37 @@
 
 namespace App\Features\Media\Actions;
 
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Spatie\QueryBuilder\QueryBuilder;
-use Spatie\QueryBuilder\AllowedFilter;
+use App\Features\Media\Domain\Data\MediaData;
+use App\Features\Media\Domain\Models\Media;
 use Lorisleiva\Actions\Concerns\AsAction;
-use App\Features\Media\Models\MediaLibrary;
+use Spatie\LaravelData\DataCollection;
 
 class GetMediaAction
 {
     use AsAction;
 
     /**
-     * @param MediaLibrary|null $library Si fourni, filtre les médias d'une bibliothèque précise
+     * @return DataCollection<MediaData>
      */
-    public function handle(?MediaLibrary $library = null)
+    public function handle(?string $search = null, ?string $type = null): mixed
     {
-        // On démarre le QueryBuilder sur le modèle Media de Spatie
-        $query = QueryBuilder::for(Media::class);
+        $query = Media::query()->latest();
 
-        // Si une bibliothèque est passée, on restreint la recherche
-        if ($library) {
-            $query->where('model_type', MediaLibrary::class)
-                  ->where('model_id', $library->id);
+        // Filtre par recherche (Nom ou Nom de fichier)
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('file_name', 'like', "%{$search}%");
+            });
         }
 
-        return $query
-            ->allowedFilters([
-                // Filtrer par nom de fichier ou titre personnalisé
-                'name',
-                'file_name',
-                // Filtrer par collection (ex: 'avatars', 'documents')
-                'collection_name',
-                // Filtrer par type MIME (ex: 'image/jpeg', 'application/pdf')
-                AllowedFilter::partial('type', 'mime_type'),
-                // Filtre personnalisé pour la recherche globale
-                AllowedFilter::callback('search', function ($query, $value) {
-                    $query->where(function ($q) use ($value) {
-                        $q->where('name', 'LIKE', "%{$value}%")
-                          ->orWhere('file_name', 'LIKE', "%{$value}%");
-                    });
-                }),
-            ])
-            ->allowedSorts(['created_at', 'size', 'name'])
-            ->defaultSort('-created_at'); // Plus récents en premier
+        // Filtre par type (ex: 'video' ou 'image')
+        if ($type === 'video') {
+            $query->where('custom_properties->is_video', true);
+        } elseif ($type === 'image') {
+            $query->where('mime_type', 'like', 'image/%');
+        }
+
+        return MediaData::collect($query->paginate(10));
     }
 }

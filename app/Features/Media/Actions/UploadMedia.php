@@ -2,7 +2,7 @@
 
 namespace App\Features\Media\Actions;
 
-use App\Features\Media\Models\MediaLibrary;
+use App\Features\Media\Domain\Models\MediaLibrary;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Illuminate\Http\UploadedFile;
 

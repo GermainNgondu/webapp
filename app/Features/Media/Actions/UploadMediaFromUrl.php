@@ -2,7 +2,7 @@
 
 namespace App\Features\Media\Actions;
 
-use App\Features\Media\Models\MediaLibrary;
+use App\Features\Media\Domain\Models\MediaLibrary;
 use App\Features\Media\Support\Enums\MediaSource;
 use App\Features\Media\Support\Parser\MediaVideoParser;
 use Illuminate\Support\Facades\Http;

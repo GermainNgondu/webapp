@@ -45,7 +45,7 @@ new #[Layout('admin::layouts.admin')] class extends Component
     public function render()
     {
         return $this->view([
-            'medias' => GetMediaAction::run()->paginate(18)
+            'medias' => GetMediaAction::run()
         ]);
     }
 };
@@ -72,8 +72,8 @@ new #[Layout('admin::layouts.admin')] class extends Component
         @foreach($medias as $media)
             <flux:card class="relative group p-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all">
                 <div class="aspect-square flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
-                    @if(str_contains($media->mime_type, 'image'))
-                        <img src="{{ $media->getUrl() }}" class="object-cover w-full h-full">
+                    @if(str_contains($media->type->value, 'image'))
+                        <img src="{{ $media->url }}" class="object-cover w-full h-full">
                     @else
                         <flux:icon.document class="size-10 text-zinc-400" />
                     @endif
