@@ -39,6 +39,11 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
 
     }
 
+    public function bulkDelete(array $ids): void
+    {
+
+    }
+
     #[On('media-imported')]
     public function refresh():void
     {
@@ -54,7 +59,7 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
 };
 ?>
 @placeholder
-    <div class="flex items-center justify-center min-h-screen">
+    <div class="flex items-center justify-center min-h-[calc(100vh-150px)]">
         <flux:icon.loading />
     </div>
 @endplaceholder

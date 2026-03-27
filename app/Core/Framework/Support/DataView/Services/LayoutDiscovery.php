@@ -3,7 +3,13 @@
 namespace App\Core\Framework\Support\DataView\Services;
 
 use ReflectionClass;
-use App\Core\Framework\Support\DataView\Attributes\{Column,Filter, Grid, DataAction};
+use App\Core\Framework\Support\DataView\Attributes\{
+    Column,
+    Filter,
+    Grid,
+    DataAction,
+    DefaultSort
+};
 
 class LayoutDiscovery
 {
@@ -85,6 +91,7 @@ class LayoutDiscovery
                 'label'    => $instance->label,
                 'icon'     => $instance->icon,
                 'isGlobal' => $instance->isGlobal,
+                'isBulk'   => $instance->isBulk,
                 'variant'  => $instance->variant,
                 'color'    => $instance->color,
                 'confirm'  => $instance->confirm,
@@ -92,5 +99,18 @@ class LayoutDiscovery
         }
 
         return $actions;
+    }
+
+    public static function getDefaultSort(string $dataClass): ?string
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $attr = $reflection->getAttributes(DefaultSort::class)[0] ?? null;
+
+        if ($attr) {
+            $instance = $attr->newInstance();
+            return ($instance->direction === 'desc' ? '-' : '') . $instance->column;
+        }
+
+        return null;
     }
 }

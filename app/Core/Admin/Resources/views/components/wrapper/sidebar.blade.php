@@ -1,4 +1,5 @@
 @props(['layout'])
+
 @php $brand = $layout->getBrand(); @endphp
 
 <flux:sidebar sticky :collapsible="true" class="bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 md:w-[220px]">
@@ -38,11 +39,20 @@
                 <x-admin::theme-switch format="switch"/>
             </flux:menu.item>            
             <flux:menu.separator />
-            <flux:menu.item icon="arrow-right-start-on-rectangle" :href="route('admin.users.logout')" class="capitalize">
-                {{ __('logout') }}
-            </flux:menu.item>
+            <form method="POST" action="{{ route('admin.users.logout') }}">
+                @csrf
+                <flux:menu.item
+                    as="button"
+                    type="submit"
+                    icon="arrow-right-start-on-rectangle"
+                    class="w-full cursor-pointer"
+                >
+                    {{ __('Log out') }}
+                </flux:menu.item>
+            </form>
         </flux:menu>
     </flux:dropdown>
+
 </flux:sidebar>
 
 <flux:header class="lg:hidden">
@@ -58,9 +68,17 @@
                 <x-admin::theme-switch format="switch"/>
             </flux:menu.item>            
             <flux:menu.separator />
-            <flux:menu.item icon="arrow-right-start-on-rectangle" :href="route('admin.users.logout')" class="capitalize">
-                {{ __('logout') }}
-            </flux:menu.item>
+            <form method="POST" action="{{ route('admin.users.logout') }}">
+                @csrf
+                <flux:menu.item
+                    as="button"
+                    type="submit"
+                    icon="arrow-right-start-on-rectangle"
+                    class="w-full cursor-pointer"
+                >
+                    {{ __('Log out') }}
+                </flux:menu.item>
+            </form>
         </flux:menu>
     </flux:dropdown>
 </flux:header>

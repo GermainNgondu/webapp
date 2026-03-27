@@ -2,11 +2,12 @@
 
 namespace App\Core\Framework\Support\DataView\Contracts;
 
-use Illuminate\Http\Request;
-use Spatie\QueryBuilder\QueryBuilder;
-use Spatie\QueryBuilder\AllowedFilter;
-use ReflectionClass;
 use App\Core\Framework\Support\DataView\Attributes\{Filter,Column};
+use App\Core\Framework\Support\DataView\Services\LayoutDiscovery;
+use Illuminate\Http\Request;
+use ReflectionClass;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 abstract class BaseDataViewAction
 {
@@ -21,29 +22,45 @@ abstract class BaseDataViewAction
             'sort'   => $params['sort'] ?? null,
         ]);
 
-        $query = QueryBuilder::for($this->getModel(), $request);
+        $defaultSort = $this->getDefaultSort();
+        $allowedSorts = $this->discoverSorts();
 
-        // 1. Auto-découverte des Filtres
-        $query->allowedFilters($this->discoverFilters());
+        if ($defaultSort) 
+        {
+            $cleanDefault = ltrim($defaultSort, '-');
+            
+            if (!in_array($cleanDefault, $allowedSorts)) 
+            {
+                $allowedSorts[] = $cleanDefault;
+            }
+        }
 
-        // 2. Auto-découverte des Tris
-        $query->allowedSorts($this->discoverSorts());
+        $query = QueryBuilder::for($this->getModel(), $request)
+            ->allowedSorts($allowedSorts)
+            ->defaultSort($defaultSort)
+            ->allowedFilters($this->discoverFilters());
 
-        // 3. Exécution et Transformation en Data Collection
-        $results = $query->paginate($params['per_page'] ?? 15);
+        $paginator = $query->paginate($params['per_page'] ?? 15);
 
-        return ($this->getDataClass())::collect($results);
+        return ($this->getDataClass())::collect($paginator);
     }
-
+    
+    protected function getDefaultSort(): ?string
+    {
+        return LayoutDiscovery::getDefaultSort($this->getDataClass());
+    }
+    
     protected function discoverFilters(): array
     {
         $reflection = new ReflectionClass($this->getDataClass());
         $allowed = [];
 
-        foreach ($reflection->getProperties() as $property) {
+        foreach ($reflection->getProperties() as $property) 
+        {
             $filterAttr = $property->getAttributes(Filter::class)[0] ?? null;
             
-            if ($filterAttr) {
+            if ($filterAttr) 
+            {
                 $instance = $filterAttr->newInstance();
                 $name = $property->getName();
 
@@ -59,9 +76,11 @@ abstract class BaseDataViewAction
 
         $allowed[] = AllowedFilter::callback('global', function ($query, $value) use ($reflection) {
                 $query->where(function ($q) use ($value, $reflection) {
-                        foreach ($reflection->getProperties() as $property) {
+                        foreach ($reflection->getProperties() as $property) 
+                        {
                             $columnAttr = $property->getAttributes(Column::class)[0] ?? null;
-                            if ($columnAttr && $columnAttr->newInstance()->searchable) {
+                            if ($columnAttr && $columnAttr->newInstance()->searchable) 
+                            {
                                 $q->orWhere($property->getName(), 'LIKE', "%{$value}%");
                             }
                         }
@@ -76,9 +95,11 @@ abstract class BaseDataViewAction
         $reflection = new ReflectionClass($this->getDataClass());
         $sorts = [];
 
-        foreach ($reflection->getProperties() as $property) {
+        foreach ($reflection->getProperties() as $property) 
+        {
             $colAttr = $property->getAttributes(Column::class)[0] ?? null;
-            if ($colAttr && $colAttr->newInstance()->sortable) {
+            if ($colAttr && $colAttr->newInstance()->sortable) 
+            {
                 $sorts[] = $property->getName();
             }
         }

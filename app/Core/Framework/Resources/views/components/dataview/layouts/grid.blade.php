@@ -11,32 +11,62 @@
 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     @foreach($items as $item)
 
-        <flux:card wire:key="grid-item-{{ $item->id }}" class="flex flex-col overflow-hidden p-0 transition-shadow hover:shadow-md">
-            
+        <flux:card 
+            wire:key="grid-item-{{ $item->id }}" 
+            ::class="selected.includes('{{ $item->id }}') ? 'ring-2 ring-zinc-500 border-transparent' : 'border-zinc-200'"
+            class="relative group flex flex-col overflow-hidden p-0 transition-shadow hover:shadow-md">
+            <div 
+                class="absolute top-2 left-2 z-20 transition-opacity cursor-pointer"
+                :class="selected.includes('{{ $item->id }}') ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+            >
+                <flux:checkbox 
+                    x-model="selected" 
+                    value="{{ $item->id }}" 
+                    class="shadow-sm bg-white"
+                />
+            </div>
             {{-- 1. Section IMAGE --}}
             @if(isset($grid['image']))
-                <div class="relative aspect-video w-full overflow-hidden bg-zinc-100 border-b border-zinc-200">
-                    @php $imageUrl = $item->{$grid['image']['field']}; @endphp
+                <div class="relative aspect-video w-full overflow-hidden bg-zinc-100 border-b border-zinc-200 flex items-center justify-center">
+                    @php 
+                        $imageUrl = $item->{$grid['image']['field']};
+                        // On vérifie si c'est une image (via le mime_type s'il existe dans l'item)
+                        $isImage = str_contains($item->mime_type ?? '', 'image') || 
+                                collect(['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'])->contains(pathinfo($imageUrl, PATHINFO_EXTENSION));
+                    @endphp
                     
-                    @if($imageUrl)
+                    @if($imageUrl && $isImage)
                         <img 
                             src="{{ $imageUrl }}" 
                             alt="Preview" 
                             class="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
                         >
                     @else
-                        <div class="flex h-full w-full items-center justify-center text-zinc-400">
-                            <flux:icon icon="photo" variant="outline" class="size-10" />
+                        {{-- PLACEHOLDER DYNAMIQUE POUR DOCUMENTS --}}
+                        <div class="flex flex-col items-center gap-2 text-zinc-400">
+                            @php
+                                // On choisit une icône plus grande pour le centre
+                                $icon = match(true) {
+                                    str_contains($item->mime_type ?? '', 'pdf') => 'document-text',
+                                    str_contains($item->mime_type ?? '', 'video') => 'video-camera',
+                                    str_contains($item->mime_type ?? '', 'zip') => 'archive',
+                                    default => 'document',
+                                };
+                            @endphp
+                            <flux:icon :name="$icon" class="size-12 opacity-50 stroke-[1.5]" />
+                            
+                            @if(!$isImage)
+                                <span class="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                                    {{ pathinfo($imageUrl, PATHINFO_EXTENSION) ?: 'DOC' }}
+                                </span>
+                            @endif
                         </div>
                     @endif
 
-                    {{-- Badge superposé sur l'image --}}
+                    {{-- Badge (ton composant media-type-badge) --}}
                     @if(isset($grid['badge']))
                         <div class="absolute right-2 top-2">
-                            <x-dynamic-component 
-                                :component="$grid['badge']['component'] ?? 'core::ui.media-type-badge'" 
-                                :value="$item->{$grid['badge']['field']}"
-                            />
+                            <x-core::ui.media-type-badge :value="$item->{$grid['badge']['field']}" />
                         </div>
                     @endif
                 </div>

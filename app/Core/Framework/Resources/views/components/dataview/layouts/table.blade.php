@@ -1,7 +1,14 @@
-@props(['items', 'schema', 'actions' => []])
+@props([
+    'items',
+    'schema',
+    'actions' => []
+])
 
 <flux:table container:class="max-h-[calc(100vh-150px)]">
     <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
+        <flux:table.column>
+            <flux:checkbox x-on:change="toggleAll" ::checked="selected.length === pageIds.length && pageIds.length > 0" />
+        </flux:table.column>
         @foreach($schema as $field => $config)
             <flux:table.column 
                 :sortable="$config['sortable'] ?? false"
@@ -18,10 +25,17 @@
     <flux:table.rows>
         @foreach($items as $item)
             <flux:table.row :key="'row-'.$item->id">
+                <flux:table.cell>
+                    <flux:checkbox x-model="selected" value="{{ $item->id }}" />
+                </flux:table.cell>
                 @foreach($schema as $field => $config)
                     <flux:table.cell>
                         @if($config['component'])
-                            <x-dynamic-component :component="$config['component']" :value="$item->$field" />
+                            <x-dynamic-component 
+                                :component="$config['component']" 
+                                :value="$item->$field" 
+                                :item="$item"
+                            />
                         @else
                             {{ $item->$field }}
                         @endif

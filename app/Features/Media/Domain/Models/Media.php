@@ -2,6 +2,7 @@
 
 namespace App\Features\Media\Domain\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use App\Features\Media\Support\Enums\MediaSource;
 use App\Features\Media\Support\Enums\MediaType;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -42,7 +43,8 @@ class Media extends BaseMedia
     public function getTypeAttribute(): MediaType
     {
         $source = $this->getCustomProperty('source');
-        if ($source) {
+
+        if ($source != 'local') {
             return match ($source) {
                  MediaSource::YOUTUBE->value => MediaType::YOUTUBE,
                  MediaSource::VIMEO->value => MediaType::VIMEO,
@@ -50,6 +52,10 @@ class Media extends BaseMedia
                  default => MediaType::OTHER,
             };
         }
+        
+        $type = $this->getCustomProperty('type');
+
+        if($type){ return MediaType::from($type); }
 
         $mime = $this->mime_type;
 
@@ -84,4 +90,20 @@ class Media extends BaseMedia
 
         return round($bytes, 2) . ' ' . $units[$pow];
     }
+
+    /**
+     * Scope typé avec MediaType.
+     * On garantit que $type est obligatoirement un cas de notre Enum.
+     */
+    public function scopeOfType(Builder $query, MediaType $type): Builder
+    {
+        return match ($type) {
+            MediaType::VIDEO => $query->where('custom_properties->type', MediaType::VIDEO->value),
+            MediaType::IMAGE => $query->where('custom_properties->type', MediaType::IMAGE->value),
+            MediaType::AUDIO => $query->where('custom_properties->type', MediaType::AUDIO->value),
+            MediaType::DOCUMENT => $query->where('custom_properties->type', MediaType::DOCUMENT->value),
+            MediaType::ARCHIVE => $query->where('custom_properties->type', MediaType::ARCHIVE->value),
+            MediaType::OTHER => $query->where('custom_properties->type', MediaType::OTHER->value),
+        };
+    }    
 }

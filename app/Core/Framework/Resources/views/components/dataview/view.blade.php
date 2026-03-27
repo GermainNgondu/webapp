@@ -1,6 +1,15 @@
 @props(['view', 'items', 'schema', 'availableViews' => ['table', 'grid']])
 
-<div class="mt-5 mb-5">
+<div 
+    x-data="{ 
+        selected: $wire.entangle('selected'),
+        pageIds: {{ json_encode($items->pluck('id')->toArray()) }},
+        toggleAll() {
+            this.selected = this.selected.length === this.pageIds.length ? [] : [...this.pageIds];
+        }
+    }"
+    x-on:clear-selection.window="selected = []"
+    class="mt-5 mb-5">
     <div class="sticky top-0 z-30 bg-white dark:bg-zinc-900 py-2 -mt-4">
         <div class="md:flex justify-between items-center mb-6 sm:space-y-2">
             <div class="flex items-center gap-3">
@@ -9,11 +18,11 @@
                         <flux:radio :value="$v" :icon="$this->getIconForView($v)" class="cursor-pointer" :title="ucfirst($v)" />
                     @endforeach
                 </flux:radio.group>
-                <x-core::dataview.search/>
+                <x-core::dataview.parts.search/>
             </div>
 
             <div class="flex items-center gap-3">
-                <x-core::dataview.filters :schema="$this->filterSchema" />
+                <x-core::dataview.parts.filters :schema="$this->filterSchema" />
                 <x-core::dataview.actions.global :actions="$this->globalActions"/>
             </div>
                 
@@ -21,9 +30,9 @@
     </div>
 
     <div class="relative">
-        <x-core::dataview.skeleton :view="$view" :schema="$this->schema" />
+        <x-core::dataview.parts.skeleton :view="$view" :schema="$this->schema" />
 
-        <div>
+        <div wire:loading.remove  wire:target.except="handleAction, handleBulkAction, selected">
 
             <div class="mt-4">
                 <x-dynamic-component 
@@ -37,8 +46,11 @@
     </div>
 
 
-    <div wire:loading.remove>
-        <x-core::dataview.pagination :items="$items" />
+    <div wire:loading.remove  wire:target.except="handleAction">
+        <x-core::dataview.parts.pagination :items="$items" />
     </div>
-
+    <x-core::dataview.actions.bulk-bar 
+            :actions="$this->actions['bulk'] ?? []" 
+            :selected="$this->selected"
+        />
 </div>

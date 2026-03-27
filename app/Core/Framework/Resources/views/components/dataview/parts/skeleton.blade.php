@@ -1,6 +1,6 @@
 @props(['view', 'schema' => []])
 
-<div wire:loading class="w-full animate-pulse">
+<div wire:loading.delay.short wire:target.except="handleAction, handleBulkAction, selected" class="w-full animate-pulse">
     @if($view === 'table')
         {{-- Skeleton TABLE --}}
         <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white">

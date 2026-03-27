@@ -20,7 +20,7 @@ class LoginData extends Data
 {
     public function __construct(
         #[Field(
-            label: 'Adresse Email', 
+            label: 'Email', 
             type: 'email', 
             required: true, 
             rules: 'email',

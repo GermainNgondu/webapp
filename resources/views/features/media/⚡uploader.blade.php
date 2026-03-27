@@ -6,7 +6,7 @@ use Livewire\Attributes\Lazy;
 use App\Features\Media\Domain\Models\MediaLibrary;
 use App\Features\Media\Actions\{UploadMedia, UploadMediaFromUrl, CleanTemporaryFilesAction};
 
-new #[Lazy] class extends Component
+new class extends Component
 {
     use WithFileUploads;
 

@@ -70,7 +70,7 @@
 
                         {{-- Bouton pour l'URL --}}
                         <template x-if="tab === 'url'">
-                            <flux:button wire:click="uploadUrl" variant="primary" x-bind:disabled="!isValidUrl" class="cursor-pointer">
+                            <flux:button wire:click="uploadUrl" variant="primary" x-bind:disabled="!url" class="cursor-pointer">
                                 Confirmer l'URL
                             </flux:button>
                         </template>

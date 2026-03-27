@@ -28,6 +28,7 @@ trait HasDataView
     public array $filterSchema = [];
     public array $globalActions = [];
     public array $rowActions = [];
+    public array $selected = [];
 
 
     /**
@@ -39,23 +40,26 @@ trait HasDataView
     /**
      * Initialisation automatique par Livewire
      */
-    public function mountHasDataView()
+    public function mountHasDataView(): void
     {
         $this->schema = LayoutDiscovery::getSchema($this->getDataClass());
         $this->filterSchema = LayoutDiscovery::getFilters($this->getDataClass());
         $actions = LayoutDiscovery::getActions($this->getDataClass());
         $this->globalActions = array_filter($actions, fn($a) => $a['isGlobal']);
         $this->rowActions = array_filter($actions, fn($a) => !$a['isGlobal']);
+        if (empty($this->sort)) {
+            $this->sort = LayoutDiscovery::getDefaultSort($this->getDataClass());
+        }
     }
     /**
      * On réinitialise la page quand on cherche ou qu'on filtre
      */
-    public function updatedSearch() { $this->resetPage(); }
-    public function updatedFilters() { $this->resetPage(); }
+    public function updatedSearch(): void { $this->selected = []; $this->resetPage(); }
+    public function updatedFilters(): void { $this->selected = []; $this->resetPage(); }
     /**
      * Récupération des données via l'Action
      */
-    public function getRowsProperty()
+    public function getRowsProperty(): mixed
     {
         $searchPayload = [];
         $searchTerm = trim($this->search);
@@ -79,10 +83,10 @@ trait HasDataView
     /**
      * Helper pour changer le tri depuis la vue (utilisé par Flux Table)
      */
-    public function sortBy(string $field)
+    public function sortBy(string $field): void
     {
         if ($this->sort === $field) {
-            $this->sort = "-{$field}"; // Switch vers DESC
+            $this->sort = "-{$field}"; // DESC
         } elseif ($this->sort === "-{$field}") {
             $this->sort = null; // Annule le tri
         } else {
@@ -107,12 +111,37 @@ trait HasDataView
     /**
      * Routeur d'actions : redirige vers les méthodes du composant
     */
-    public function handleAction(string $actionName, $id = null)
+    public function handleAction(string $actionName, $id = null): void
     {
         if (method_exists($this, $actionName)) {
             $this->{$actionName}($id);
         } else {
-            // Optionnel : Dispatcher une erreur ou un log si l'action n'est pas codée
+           
+        }
+    }
+    /**
+     * Sélectionner/Désélectionner tout sur la page actuelle
+     */
+    public function toggleSelectAll($pageIds)
+    {
+        if (count($this->selected) === count($pageIds)) {
+            $this->selected = [];
+        } else {
+            $this->selected = $pageIds;
+        }
+    }
+
+    /**
+     * L'action ne reçoit plus les IDs en paramètre, 
+     * elle utilise directement $this->selected
+     */
+    public function handleBulkAction(string $method)
+    {
+        if (empty($this->selected)) return;
+
+        if (method_exists($this, $method)) {
+            $this->{$method}($this->selected);
+            $this->selected = [];
         }
     }
 
@@ -125,7 +154,8 @@ trait HasDataView
         // On garantit que les clés 'global' et 'row' existent TOUJOURS
         return [
             'global' => array_values(array_filter($allActions, fn($a) => ($a['isGlobal'] ?? false))),
-            'row'    => array_values(array_filter($allActions, fn($a) => !($a['isGlobal'] ?? false))),
+            'row'    => array_values(array_filter($allActions, fn($a) => !$a['isGlobal'] && !$a['isBulk'])),
+            'bulk'   => array_values(array_filter($allActions, fn($a) => $a['isBulk'])),
         ];
     }
 

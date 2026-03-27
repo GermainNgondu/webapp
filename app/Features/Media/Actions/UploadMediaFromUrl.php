@@ -4,6 +4,7 @@ namespace App\Features\Media\Actions;
 
 use App\Features\Media\Domain\Models\MediaLibrary;
 use App\Features\Media\Support\Enums\MediaSource;
+use App\Features\Media\Support\Enums\MediaType;
 use App\Features\Media\Support\Parser\MediaVideoParser;
 use Illuminate\Support\Facades\Http;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -27,7 +28,7 @@ class UploadMediaFromUrl
                     'video_id' => $videoInfo['id'],
                     'video_provider' => $videoInfo['provider'],
                     'video_url' => $url,
-                    'is_video' => true,
+                    'type'=> MediaType::VIDEO->value
                 ])
                 ->toMediaCollection($collection);
         }

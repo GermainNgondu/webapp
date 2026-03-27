@@ -11,6 +11,7 @@ class DataAction {
         public ?string $label = null,          
         public ?string $icon = null,           
         public bool $isGlobal = false, 
+        public bool $isBulk = false,
         public string $variant = 'ghost',
         public ?string $color = null,
         public ?string $confirm = null,

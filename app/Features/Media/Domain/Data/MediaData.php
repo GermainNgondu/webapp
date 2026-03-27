@@ -2,18 +2,26 @@
 
 namespace App\Features\Media\Domain\Data;
 
-use App\Core\Framework\Support\DataView\Attributes\{DataAction,Grid, Filter,Column};
+use App\Core\Framework\Support\DataView\Attributes\{
+    DataAction,
+    Grid,
+    Filter,
+    Column,
+    DefaultSort
+};
 use App\Features\Media\Domain\Models\Media;
 use Spatie\LaravelData\Data;
 
+#[DefaultSort(column: 'created_at', direction: 'desc')]
 #[DataAction(name: 'showModalImport', label: 'Importer', icon: 'plus', isGlobal: true, variant: 'primary')]
 #[DataAction(name: 'ShowModalEdit', label: 'Modifier', icon: 'pencil-square')]
 #[DataAction(name: 'delete', label: 'Supprimer', icon: 'trash', color: 'red', confirm: 'Supprimer ce fichier définitivement ?')]
+#[DataAction(name: 'bulkDelete', label: 'Supprimer', icon: 'trash', isBulk: true, confirm: 'Supprimer les fichiers sélectionnés ?')]
 class MediaData extends Data
 {
     public function __construct(
         public int $id,
-        #[Column(label: 'Nom du fichier', searchable: true, sortable: true)]
+        #[Column(label: 'Nom du fichier', component: 'core::ui.media-cell', searchable: true, sortable: true)]
         #[Grid(position: 'title')]
         public string $name,
         public string $file_name,
