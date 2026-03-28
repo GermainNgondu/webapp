@@ -3,6 +3,7 @@
 namespace App\Features\Users\Domain\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Features\Users\Domain\Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -60,5 +61,13 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Crée une nouvelle instance de la factory pour le modèle.
+     */
+    protected static function newFactory()
+    {
+        return UserFactory::new();
     }
 }

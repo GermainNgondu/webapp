@@ -78,7 +78,7 @@ trait HasResource
             'list', 'index', 'table', 'grid', 'kanban', 'map', 'calendar' => $this->getListDataClass(),
             'detail', 'show', 'view' => $this->getDetailDataClass(),
             'form', 'create', 'edit', 'upsert' => $this->getFormDataClass(),
-            'insight' => $this->getInsightDataClass(),
+            'insight','dashboard' => $this->getInsightDataClass(),
             default => $this->getListDataClass(),
         };
     }

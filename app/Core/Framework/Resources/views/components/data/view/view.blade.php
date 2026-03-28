@@ -1,4 +1,10 @@
-@props(['view'=> 'table', 'items', 'schema', 'availableViews' => ['table', 'grid']])
+@props([
+    'view'=> 'table', 
+    'items', 
+    'schema', 
+    'availableViews' => [],
+    'resource'=> null
+])
 
 <div 
     x-data="{ 
@@ -13,13 +19,15 @@
     <div class="sticky top-0 z-30 bg-white dark:bg-zinc-900 py-2 -mt-4">
         <div class="md:flex justify-between items-center mb-6 sm:space-y-2">
             <div class="flex items-center gap-3">
-                <flux:radio.group wire:model.live="view" variant="segmented">
-                    @foreach($availableViews as $v)
-                        <flux:radio :value="$v" :icon="$this->getIconForView($v)" class="cursor-pointer" :title="ucfirst($v)" />
-                    @endforeach
-                </flux:radio.group>
+                @if($availableViews)
+                    <flux:radio.group wire:model.live="view" variant="segmented">
+                        @foreach($availableViews as $v)
+                            <flux:radio :value="$v" :icon="$this->getIconForView($v)" class="cursor-pointer" :title="ucfirst($v)" />
+                        @endforeach
+                    </flux:radio.group>
+                @endif
                 <x-core::data.view.parts.search/>
-                <div wire:loading wire:target="handleAction">
+                <div wire:loading wire:target="handleAction, showItem, updateItemStatus">
                     <flux:icon.loading />
                 </div>
             </div>
@@ -35,7 +43,8 @@
     <div class="relative">
         <x-core::data.view.parts.skeleton :view="$view" :schema="$this->schema" />
 
-        <div wire:loading.remove  wire:target.except="handleAction, handleBulkAction, selected">
+        <div wire:loading.remove  
+            wire:target.except="handleAction, handleBulkAction, selected, quickCreate, saveQuickItem,showItem,updateItemStatus">
 
             <div class="mt-4">
                 <x-dynamic-component 
@@ -43,6 +52,7 @@
                     :items="$items" 
                     :schema="$schema" 
                     :actions="$this->actions"
+                    :resource="$resource"
                 />
             </div>        
         </div>        

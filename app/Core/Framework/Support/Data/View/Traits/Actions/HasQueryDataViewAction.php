@@ -34,7 +34,7 @@ trait HasQueryDataViewAction
 
         $query = QueryBuilder::for($this->getModel(), $request)
             ->allowedSorts($allowedSorts)
-            ->defaultSort($defaultSort)
+            ->defaultSort($defaultSort ?? [])
             ->allowedFilters($this->discoverFilters());
 
         $paginator = $query->paginate($params['per_page'] ?? 15);

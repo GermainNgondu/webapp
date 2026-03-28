@@ -4,6 +4,7 @@ namespace App\Core\Framework\Support\Data\View\Traits\Shared;
 
 use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
 use App\Core\Framework\Support\Data\View\Traits\HasDetailView;
+use Flux\Flux;
 use Livewire\{WithPagination,WithFileUploads};
 use Livewire\Attributes\{Url,Computed};
 
@@ -30,6 +31,9 @@ trait HasDataViewCommon
     public array $rowActions = [];
     public array $selected = [];
     public string $context = 'list';
+
+    public $isCreating = false;
+    public array $formState = [];
 
     /**
      * On réinitialise la page quand on cherche ou qu'on filtre
@@ -141,7 +145,6 @@ trait HasDataViewCommon
             'bulk'   => array_values(array_filter($allActions, fn($a) => $a['isBulk'])),
         ];
     }
-
     /**
      * @return string
      */

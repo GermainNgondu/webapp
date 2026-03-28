@@ -2,69 +2,48 @@
 
 namespace Database\Seeders;
 
-use App\Features\Users\Domain\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Exécute les seeders de toutes les Features dynamiquement.
+     */
     public function run(): void
     {
-        // 1. Nettoyer le cache des permissions (Indispensable avec Spatie)
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        $featuresPath = app_path('Features');
 
-        // 2. CRÉATION DES PERMISSIONS
-        $permissions = [
-            'edit-contacts',
-            'view-finance',
-            'edit-finance',
-            'access-admin-tools',
-            'view-emails', // Pour le champ dans le repeater
-        ];
-
-        foreach ($permissions as $permission) {
-            Permission::findOrCreate($permission, 'web');
+        if (!File::exists($featuresPath)) {
+            return;
         }
 
-        // 3. CRÉATION DES RÔLES ET ATTRIBUTION DES PERMISSIONS
+        foreach (File::directories($featuresPath) as $featurePath) {
+            $seederPath = $featurePath . '/Domain/Database/Seeders';
 
-        // ADMIN : A tous les droits
-        $adminRole = Role::findOrCreate('admin', 'web');
-        $adminRole->givePermissionTo(Permission::all());
+            if (!File::exists($seederPath)) {
+                continue;
+            }
 
-        // COMPTABLE : Voit la finance mais ne peut pas éditer les contacts
-        $accountantRole = Role::findOrCreate('accountant', 'web');
-        $accountantRole->syncPermissions(['view-finance', 'view-emails']);
+            foreach (File::files($seederPath) as $file) {
+                $class = $this->getNamespace($file->getRealPath());
 
-        // MANAGER : Peut tout modifier sauf la finance et l'admin
-        $managerRole = Role::findOrCreate('manager','web');
-        $managerRole->syncPermissions(['edit-contacts', 'view-emails']);
+                if (class_exists($class) && $class !== self::class) {
+                    $this->command->info("Seeding: " . $class);
+                    $this->call($class);
+                }
+            }
+        }
+    }
 
-        // 4. CRÉATION DES UTILISATEURS DE TEST
-        
-        // L'Admin
-        $admin = User::factory()->create([
-            'name' => 'Super Admin',
-            'email' => 'admin@test.com',
-            'password' => Hash::make('password'),
-        ]);
-        $admin->assignRole($adminRole);
+    /**
+     * Convertit un chemin absolu de fichier en Namespace PSR-4 complet.
+     */
+    protected function getNamespace(string $path): string
+    {
+        $relativePath = Str::after($path, app_path());
 
-        // Le Comptable
-        $compta = User::factory()->create([
-            'name' => 'Service Compta',
-            'email' => 'compta@test.com',
-            'password' => Hash::make('password'),
-        ]);
-        $compta->assignRole($accountantRole);
-
-        // L'Utilisateur Standard (Aucun rôle)
-        User::factory()->create([
-            'name' => 'Simple Utilisateur',
-            'email' => 'user@test.com',
-            'password' => Hash::make('password'),
-        ]);
+        return 'App' . str_replace(['/', '.php'], ['\\', ''], $relativePath);
     }
 }

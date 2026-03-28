@@ -5,7 +5,7 @@ namespace App\Core\Framework\Support\Data\View\Traits;
 use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
 use App\Core\Framework\Support\Data\View\Traits\Shared\HasDataViewCommon;
 use Illuminate\Support\Str;
-use Livewire\Attributes\{Computed};
+use Livewire\Attributes\Computed;
 
 trait HasDataView
 {

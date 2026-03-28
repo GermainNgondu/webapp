@@ -10,18 +10,18 @@ trait HasKanbanView
 
     // Drag & Drop : Mise à jour du statut
     public function updateItemStatus($id, $newStatus) {
-        $config = LayoutDiscovery::getKanbanConfig($this->resource::listData());
+        $config = LayoutDiscovery::getKanbanConfig($this->getDataClass($this->context));
         $model = ($this->getModel())::findOrFail($id);
         
         if (array_key_exists($newStatus, $config['options'])) {
             $model->update([$config['field'] => $newStatus]);
-            $this->dispatch('notify', "Statut mis à jour.");
+            $this->dispatch('notify', message: "Statut mis à jour.");
         }
     }
 
     // Quick Add : Initialisation
     public function quickCreate($status) {
-        $config = LayoutDiscovery::getKanbanConfig($this->resource::listData());
+        $config = LayoutDiscovery::getKanbanConfig($this->getDataClass($this->context));
         $this->formState = [$config['field'] => $status];
         $this->js("\$flux.modal('quick-create-modal').show()");
     }
