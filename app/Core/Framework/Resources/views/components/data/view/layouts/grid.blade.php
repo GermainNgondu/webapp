@@ -166,8 +166,5 @@
 
 {{-- Message si vide --}}
 @if($items->isEmpty())
-    <div class="flex flex-col items-center justify-center py-20 text-zinc-400">
-        <flux:icon icon="inbox" variant="outline" class="mb-4 size-12 opacity-20" />
-        <flux:text>Aucun élément trouvé</flux:text>
-    </div>
+    <x-core::data.view.parts.empty />
 @endif

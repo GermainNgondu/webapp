@@ -16,7 +16,7 @@
         @endif
     </div>
     <div class="flex flex-col min-w-0">
-        <span class="text-sm font-medium text-zinc-800 truncate">
+        <span class="text-sm font-medium text-zinc-800 dark:text-white truncate">
             {{ $value }}
         </span>
     </div>
