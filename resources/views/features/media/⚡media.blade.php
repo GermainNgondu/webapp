@@ -5,7 +5,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Features\Media\Actions\GetMediaAction;
 use Livewire\Attributes\{On, Layout,Lazy,Title};
-use App\Core\Framework\Support\DataView\Traits\HasDataView;
+use App\Core\Framework\Support\Data\View\Traits\HasDataView;
 use App\Features\Media\Domain\Data\MediaData;
 
 
@@ -71,6 +71,6 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
         </div>
     </div>
 
-    <x-core::dataview.view :$view :$items :$schema :available-views="['grid', 'table']"/>
+    <x-core::data.view :$view :$items :$schema :available-views="['grid', 'table']"/>
     <livewire:features::media.uploader />
 </div>

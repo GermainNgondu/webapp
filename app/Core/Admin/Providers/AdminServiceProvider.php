@@ -5,7 +5,7 @@ namespace App\Core\Admin\Providers;
 use App\Core\Admin\Console\Commands\{AdminCacheCommand, AdminClearCommand};
 use App\Core\Admin\Support\Discovery\FeatureDiscovery;
 use App\Core\Framework\Data\NavigationItemData;
-use App\Core\Framework\Managers\LayoutManager;
+use App\Core\Framework\Support\Managers\LayoutManager;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;

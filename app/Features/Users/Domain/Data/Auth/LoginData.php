@@ -2,7 +2,7 @@
 
 namespace App\Features\Users\Domain\Data\Auth;
 
-use App\Core\Framework\Support\DataForm\Attributes\{Field,FormConfig};
+use App\Core\Framework\Support\Data\Form\Attributes\{Field,FormConfig};
 use App\Features\Users\Actions\Auth\LoginAction;
 use App\Features\Users\Domain\Models\User;
 use Spatie\LaravelData\Data;

@@ -5,8 +5,8 @@ use Livewire\Attributes\Layout;
 use App\Features\Users\Actions\Auth\ResetPasswordAction;
 use App\Features\Users\Domain\Data\Auth\ResetPasswordData;
 use Illuminate\Validation\ValidationException;
-use App\Core\Framework\Support\DataForm\Traits\HasFormFields;
-use App\Core\Framework\Support\DataForm\Services\SimpleFormService;
+use App\Core\Framework\Support\Data\Form\Traits\HasFormFields;
+use App\Core\Framework\Support\Data\Form\Services\SimpleFormService;
 
 new #[Layout('admin::layouts.auth')] class extends Component
 {
@@ -68,7 +68,7 @@ new #[Layout('admin::layouts.auth')] class extends Component
     <flux:subheading>Choisissez un mot de passe robuste pour sécuriser votre compte.</flux:subheading>
 
     <form wire:submit="save" class="mt-5">
-        <x-core::dataform.layouts.simple :fields="$this->fields()" />
+        <x-core::data.form.layouts.simple :fields="$this->fields()" />
         <div class="mt-6 flex justify-end">
             <flux:button type="submit" variant="primary" class="cursor-pointer">Mettre à jour le mot de passe</flux:button>
         </div>

@@ -3,7 +3,7 @@
 namespace App\Features\Settings\Providers;
 
 use App\Core\Framework\Data\NavigationItemData;
-use App\Core\Framework\Managers\LayoutManager;
+use App\Core\Framework\Support\Managers\LayoutManager;
 use Illuminate\Support\ServiceProvider;
 
 class SettingsServiceProvider extends ServiceProvider

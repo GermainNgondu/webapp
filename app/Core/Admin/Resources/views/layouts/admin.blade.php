@@ -1,5 +1,5 @@
 @props(['title' => null])
-@php($layout = app(\App\Core\Framework\Managers\LayoutManager::class))
+@php($layout = app(\App\Core\Framework\Support\Managers\LayoutManager::class))
 
 <!DOCTYPE html>
 <html lang="fr" class="h-full bg-white dark:bg-zinc-900">
@@ -18,7 +18,7 @@
                 {{ $slot }}
             </x-admin::wrapper.header>
         @endif
-        <x-core::notification />        
+        <x-core::ui.notification />        
         @fluxScripts
         @livewireScripts
     </body>

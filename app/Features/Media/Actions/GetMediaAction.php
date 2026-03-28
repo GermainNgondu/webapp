@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Features\Media\Domain\Models\Media;
 use App\Features\Media\Domain\Data\MediaData;
 use App\Features\Media\Support\Enums\MediaType;
-use App\Core\Framework\Support\DataView\Contracts\BaseDataViewAction;
+use App\Core\Framework\Support\Data\View\Contracts\BaseDataViewAction;
 
 class GetMediaAction extends BaseDataViewAction
 {

@@ -2,7 +2,7 @@
 
 namespace App\Features\Users\Domain\Data\Auth;
 
-use App\Core\Framework\Support\DataForm\Attributes\Field;
+use App\Core\Framework\Support\Data\Form\Attributes\Field;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

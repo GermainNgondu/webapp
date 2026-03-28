@@ -2,7 +2,7 @@
 
 namespace App\Features\Media\Domain\Data;
 
-use App\Core\Framework\Support\DataView\Attributes\{
+use App\Core\Framework\Support\Data\View\Attributes\{
     DataAction,
     Grid,
     Filter,

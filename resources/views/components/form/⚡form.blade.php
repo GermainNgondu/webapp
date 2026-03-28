@@ -1,7 +1,7 @@
 <?php
 
 use Livewire\Component;
-use App\Core\Framework\Support\DataForm\Traits\HasForm;
+use App\Core\Framework\Support\Data\Form\Traits\HasForm;
 use Livewire\Attributes\Lazy;
 
 
@@ -37,13 +37,13 @@ new #[Lazy] class extends Component
 
         @csrf
         @if($layout === 'accordion')
-            <x-core::dataform.layouts.accordion :sections="$builder" />
+            <x-core::data.form.layouts.accordion :sections="$builder" />
         @elseif($layout === 'tabs')
-            <x-core::dataform.layouts.tabs :tabs="$builder" />
+            <x-core::data.form.layouts.tabs :tabs="$builder" />
         @elseif($layout=== 'simple')
-            <x-core::dataform.layouts.simple :fields="$builder" />
+            <x-core::data.form.layouts.simple :fields="$builder" />
         @elseif($layout === 'wizard')
-            <x-core::dataform.layouts.wizard :steps="$builder" />
+            <x-core::data.form.layouts.wizard :steps="$builder" />
         @endif
     
         {{-- Footer/Action --}}
