@@ -18,7 +18,7 @@
         </flux:dropdown>
         @break
         @case('switch')
-            <flux:switch x-data x-model="$flux.dark" label="Dark mode"  /> 
+            <flux:switch x-data x-model="$flux.dark" label="Dark mode" class="cursor-pointer" /> 
         @break
     @default
        

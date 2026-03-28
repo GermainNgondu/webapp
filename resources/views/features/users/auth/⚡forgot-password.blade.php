@@ -45,7 +45,7 @@ new #[Layout('admin::layouts.auth')] class extends Component
     @else
         <form wire:submit="submit" class="space-y-6">
             <flux:input 
-                label="Adresse Email" 
+                label="Email" 
                 type="email" 
                 wire:model="email" 
                 required 

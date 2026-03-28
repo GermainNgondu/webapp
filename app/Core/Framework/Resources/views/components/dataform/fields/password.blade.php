@@ -65,7 +65,7 @@
                 x-model="value"
                 ::type="show ? 'text' : 'password'"
                 :disabled="$isReadOnly"
-                placeholder="••••••••"
+                :placeholder="$field['placeholder'] ?? ''"
             >
                 <x-slot name="iconTrailing">
                     <button type="button" @click="show = !show" class="flex items-center justify-center text-zinc-400 hover:text-zinc-600 focus:outline-none pr-1">

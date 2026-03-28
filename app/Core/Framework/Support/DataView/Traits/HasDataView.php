@@ -22,7 +22,7 @@ trait HasDataView
     #[Url()]
     public string $view = 'table';
 
-    public int $perPage = 10;
+    public int $perPage = 25;
     public array $schema = [];
 
     public array $filterSchema = [];

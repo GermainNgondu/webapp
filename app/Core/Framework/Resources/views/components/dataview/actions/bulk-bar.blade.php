@@ -10,7 +10,7 @@
     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
     style="display: none;"
 >
-    <div class="bg-white rounded-full px-6 py-3 shadow-2xl flex items-center gap-6 border border-zinc-800">
+    <div class="bg-white dark:bg-zinc-800 rounded-full px-6 py-3 shadow-2xl flex items-center gap-6 border border-zinc-800">
         <span class="text-sm font-medium pr-6 border-r border-zinc-700">
             <span x-text="selected.length"></span> sélectionné(s)
         </span>
