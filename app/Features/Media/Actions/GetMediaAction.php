@@ -3,24 +3,20 @@
 namespace App\Features\Media\Actions;
 
 
-use Spatie\QueryBuilder\AllowedFilter;
-use Illuminate\Database\Eloquent\Builder;
+use App\Core\Framework\Support\Data\View\Contracts\BaseIndexResourceAction;
 use App\Features\Media\Domain\Models\Media;
-use App\Features\Media\Domain\Data\MediaData;
+use App\Features\Media\MediaResource;
 use App\Features\Media\Support\Enums\MediaType;
-use App\Core\Framework\Support\Data\View\Contracts\BaseDataViewAction;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\AllowedFilter;
 
-class GetMediaAction extends BaseDataViewAction
+class GetMediaAction extends BaseIndexResourceAction
 {
     protected function getModel(): string 
     {
         return Media::class; 
     }
-
-    protected function getDataClass(): string 
-    {
-        return MediaData::class; 
-    }
+    protected string $resource = MediaResource::class;
 
     protected function discoverFilters(): array
     {

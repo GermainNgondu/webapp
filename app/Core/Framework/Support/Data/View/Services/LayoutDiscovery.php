@@ -8,7 +8,11 @@ use App\Core\Framework\Support\Data\View\Attributes\{
     Filter,
     Grid,
     DataAction,
-    DefaultSort
+    DefaultSort,
+    Detail,
+    KanbanGroup,
+    MapLocation,
+    CalendarDate
 };
 
 class LayoutDiscovery
@@ -27,7 +31,46 @@ class LayoutDiscovery
         }
         return $schema;
     }
+    public static function getCalendarConfig(string $dataClass): array
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $config = ['start' => 'created_at', 'end' => null, 'label' => 'title'];
 
+        foreach ($reflection->getProperties() as $prop) {
+            if ($attr = $prop->getAttributes(CalendarDate::class)[0] ?? null) {
+                $inst = $attr->newInstance();
+                $config[$inst->type] = $prop->getName();
+            }
+        }
+        return $config;
+    }
+    public static function getMapConfig(string $dataClass): array
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $config = ['lat' => 'latitude', 'lng' => 'longitude', 'label' => 'file_name'];
+
+        foreach ($reflection->getProperties() as $prop) {
+            if ($attr = $prop->getAttributes(MapLocation::class)[0] ?? null) {
+                $inst = $attr->newInstance();
+                $config[$inst->type] = $prop->getName();
+            }
+        }
+        return $config;
+    }
+    public static function getKanbanConfig(string $dataClass): ?array 
+    {
+        $reflection = new ReflectionClass($dataClass);
+        foreach ($reflection->getProperties() as $prop) {
+            if ($attr = $prop->getAttributes(KanbanGroup::class)[0] ?? null) {
+                $inst = $attr->newInstance();
+                return [
+                    'field' => $prop->getName(),
+                    'options' => $inst->options,
+                ];
+            }
+        }
+        return null;
+    }
     public static function getFilters(string $dataClass): array
     {
         $reflection = new ReflectionClass($dataClass);
@@ -51,7 +94,26 @@ class LayoutDiscovery
         }
         return $filters;
     }
+    public static function getDetailSchema(string $dataClass): array
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $schema = [];
 
+        foreach ($reflection->getProperties() as $property) {
+            $attr = $property->getAttributes(Detail::class)[0] ?? null;
+            if ($attr) {
+                $instance = $attr->newInstance();
+                $schema[$instance->section][] = [
+                    'field'     => $property->getName(),
+                    'label'     => $instance->label,
+                    'component' => $instance->component,
+                    'order'     => $instance->order,
+                ];
+            }
+        }
+        // Optionnel : on trie les champs par 'order' dans chaque section
+        return $schema;
+    }
     public static function getGridSchema(string $dataClass): array
     {
         $reflection = new ReflectionClass($dataClass);

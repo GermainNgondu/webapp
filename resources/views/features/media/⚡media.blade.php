@@ -2,21 +2,15 @@
 
 use Flux\Flux;
 use Livewire\Component;
-use Livewire\WithFileUploads;
-use App\Features\Media\Actions\GetMediaAction;
 use Livewire\Attributes\{On, Layout,Lazy,Title};
-use App\Core\Framework\Support\Data\View\Traits\HasDataView;
-use App\Features\Media\Domain\Data\MediaData;
-
+use App\Core\Framework\Support\Data\View\Traits\HasResource;
+use App\Features\Media\MediaResource;
 
 new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Component
 {
-    use WithFileUploads;
-    use HasDataView;
+    use HasResource;
 
-    // Configuration requise par le Trait
-    protected function getDataClass(): string { return MediaData::class; }
-    protected function getActionClass(): string { return GetMediaAction::class; }
+    protected function getResource(): string { return MediaResource::class; }
 
     public function mount():void
     {
@@ -29,6 +23,11 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
     public function showModalImport():void
     {
         Flux::modal('media-uploader-modal')->show();
+    }
+
+    public function show($id): void
+    {
+        $this->showItem($id);
     }
 
     /**
@@ -50,12 +49,7 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
 
     }
 
-    public function render()
-    {
-        return $this->view( [
-            'items' => $this->getRowsProperty()
-        ]);
-    }
+
 };
 ?>
 @placeholder
@@ -71,6 +65,8 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
         </div>
     </div>
 
-    <x-core::data.view :$view :$items :$schema :available-views="['grid', 'table']"/>
+    <x-core::data.view :view="$this->view" :items="$this->items()" :schema="$this->schema" :available-views="['grid', 'table']"/>
+
     <livewire:features::media.uploader />
+
 </div>

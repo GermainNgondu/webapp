@@ -1,4 +1,4 @@
-@props(['view', 'items', 'schema', 'availableViews' => ['table', 'grid']])
+@props(['view'=> 'table', 'items', 'schema', 'availableViews' => ['table', 'grid']])
 
 <div 
     x-data="{ 
@@ -19,6 +19,9 @@
                     @endforeach
                 </flux:radio.group>
                 <x-core::data.view.parts.search/>
+                <div wire:loading wire:target="handleAction">
+                    <flux:icon.loading />
+                </div>
             </div>
 
             <div class="flex items-center gap-3">
@@ -53,4 +56,7 @@
             :actions="$this->actions['bulk'] ?? []" 
             :selected="$this->selected"
         />
+
+    <x-core::data.view.show :item="$this->activeItem" :schema="$this->detailSchema" :mode="$this->mode" />
+
 </div>
