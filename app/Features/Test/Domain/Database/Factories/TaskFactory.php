@@ -16,6 +16,7 @@ class TaskFactory extends Factory
 
         return [
             'title'      => $this->faker->sentence(3),
+            'description'=> $this->faker->sentence(100),
             'status'     => $this->faker->randomElement(['todo', 'in_progress', 'review', 'done']),
             'started_at' => $start,
             'due_at'     => $end,

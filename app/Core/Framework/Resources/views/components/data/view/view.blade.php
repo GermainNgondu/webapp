@@ -60,7 +60,9 @@
 
 
     <div wire:loading.remove  wire:target.except="handleAction">
-        <x-core::data.view.parts.pagination :items="$items" />
+        @if ($view == 'table' || $view == 'grid')
+            <x-core::data.view.parts.pagination :items="$items" />
+        @endif
     </div>
     <x-core::data.view.actions.bulk-bar 
             :actions="$this->actions['bulk'] ?? []" 

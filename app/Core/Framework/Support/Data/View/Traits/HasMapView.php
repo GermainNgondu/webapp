@@ -16,10 +16,10 @@ trait HasMapView
 
     #[Computed]
     public function mapMarkers() {
-        $config = LayoutDiscovery::getMapConfig($this->resource::listData());
+        $config = LayoutDiscovery::getMapConfig($this->getDataClass($this->context));
         
         // On récupère les items et on les mappe pour Leaflet
-        return $this->items->map(fn($item) => [
+        return $this->items()->map(fn($item) => [
             'id' => $item->id,
             'lat' => (float) $item->{$config['lat']},
             'lng' => (float) $item->{$config['lng']},

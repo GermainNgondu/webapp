@@ -37,7 +37,7 @@
                                 :item="$item"
                             />
                         @else
-                            {{ $item->$field }}
+                           <div >{{ str($item->$field)->limit(50) }}</div>
                         @endif
                     </flux:table.cell>
                 @endforeach

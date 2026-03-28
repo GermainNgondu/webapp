@@ -12,6 +12,10 @@ class TaskListData extends Data {
         #[CalendarDate(type: 'label')] // Le texte affiché sur le calendrier
         public string $title,
 
+        #[Column(label: 'Description')]
+        #[CalendarDate(type: 'description')]
+        public string $description,
+        
         #[Column(label: 'Début')]
         #[CalendarDate(type: 'start')] // Point de départ sur le calendrier
         public string $started_at,

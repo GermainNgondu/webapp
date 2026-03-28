@@ -14,7 +14,8 @@
     $groupedItems = $items->groupBy($groupField);
 @endphp
 
-<div class="flex overflow-x-auto pb-6 gap-6 items-start scrollbar-hide px-2">
+<div wire:key="view-kanban-{{ md5(serialize($items->pluck('id'))) }}" 
+    class="flex overflow-x-auto pb-6 gap-6 items-start scrollbar-hide px-2">
     @foreach($groups as $statusValue => $statusLabel)
         <div 
             class="shrink-0 w-80 flex flex-col rounded-2xl bg-zinc-50/50 border border-zinc-100 p-4 min-h-[500px]"

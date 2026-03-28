@@ -12,7 +12,8 @@ use App\Core\Framework\Support\Data\View\Attributes\{
     Detail,
     KanbanGroup,
     MapLocation,
-    CalendarDate
+    CalendarDate,
+    DataView
 };
 
 class LayoutDiscovery

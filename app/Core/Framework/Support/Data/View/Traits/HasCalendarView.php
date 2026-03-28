@@ -7,7 +7,7 @@ use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
 trait HasCalendarView
 {
     public function updateEventDates($id, $start, $end = null) {
-        $config = LayoutDiscovery::getCalendarConfig($this->resource::listData());
+        $config = LayoutDiscovery::getCalendarConfig($this->getDataClass());
         $model = ($this->getModel())::findOrFail($id);
         
         $model->update([
@@ -15,22 +15,28 @@ trait HasCalendarView
             $config['end']   => $end ? \Carbon\Carbon::parse($end)->toDateTimeString() : null,
         ]);
 
-        $this->dispatch('notify', 'Planning mis à jour !');
+        $this->dispatch('notify', message: 'Planning mis à jour !');
     }
 
     // Préparation JSON pour FullCalendar + Tippy
-    public function getCalendarEvents($items) {
-        $config = LayoutDiscovery::getCalendarConfig($this->resource::listData());
+    public function getCalendarEvents($items)
+    {
+        $dataClass = $this->getDataClass();
+        $calendar  = LayoutDiscovery::getCalendarConfig($dataClass);
+        $kanban    = LayoutDiscovery::getKanbanConfig($dataClass);
 
         return collect($items->items())->map(fn($item) => [
             'id'    => $item->id,
-            'title' => $item->{$config['label']},
-            'start' => $item->{$config['start']},
-            'end'   => $item->{$config['end']} ?? null,
-            'backgroundColor' => $item->status_color ?? '#eff6ff',
-            'borderColor'     => $item->status_border ?? '#3b82f6',
+            'title' => $item->{$calendar['label']},
+            'start' => $item->{$calendar['start']},
+            'end'   => $item->{$calendar['end']} ?? null,
+            'backgroundColor' => $item->status_color ?? '#3b82f6',
             'extendedProps'   => [
-                'tooltip' => view('core::data.view.partials.calendar-tooltip', ['item' => $item])->render()
+                'tooltip' => view('core::components.data.view.partials.calendar-tooltip', [
+                    'item'      => $item,
+                    'calendar'  => $calendar,
+                    'kanban'    => $kanban
+                ])->render()
             ]
         ])->toArray();
     }

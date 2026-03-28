@@ -52,5 +52,31 @@
                 </div>
             @endforeach
         </div>
+    @elseif ($view === 'calendar')
+        {{-- Skeleton CALENDAR --}}
+        <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white">
+            <div class="bg-zinc-50 h-10 border-b border-zinc-200"></div> {{-- Header --}}
+            @foreach(range(1, 5) as $i)
+                <div class="flex items-center p-4 border-b border-zinc-100 gap-4">
+                    @foreach(range(1, count($schema) ?: 4) as $j)
+                        <div class="h-4 bg-zinc-100 rounded flex-1"></div>
+                    @endforeach
+                    <div class="h-4 bg-zinc-100 rounded w-10"></div> {{-- Actions --}}
+                </div>
+            @endforeach
+        </div>
+    @elseif ($view === 'map')
+        {{-- Skeleton MAP --}}
+        <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white">
+            <div class="bg-zinc-50 h-10 border-b border-zinc-200"></div> {{-- Header --}}
+            @foreach(range(1, 5) as $i)
+                <div class="flex items-center p-4 border-b border-zinc-100 gap-4">
+                    @foreach(range(1, count($schema) ?: 4) as $j)
+                        <div class="h-4 bg-zinc-100 rounded flex-1"></div>
+                    @endforeach
+                    <div class="h-4 bg-zinc-100 rounded w-10"></div> {{-- Actions --}}
+                </div>
+            @endforeach
+        </div>
     @endif
 </div>

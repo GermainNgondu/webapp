@@ -1,39 +1,61 @@
 @props(['items', 'schema'])
-
-{{-- Assets --}}
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
-<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css" />
-
+@php $locale = app()->getLocale(); @endphp
 <div 
+    wire:key="view-calendar-{{ md5(serialize($items->pluck('id'))) }}"
     x-data="{
         calendar: null,
         init() {
-            this.calendar = new FullCalendar.Calendar($refs.calendar, {
+            {{-- 2. On attend que le DOM soit stable --}}
+            this.$nextTick(() => {
+                this.setupCalendar();
+            });
+        },
+        setupCalendar() {
+            this.calendar = new window.FullCalendar.Calendar($refs.calendar, {
+                plugins: [
+                    window.FullCalendar.plugins.dayGridPlugin,
+                    window.FullCalendar.plugins.timeGridPlugin,
+                    window.FullCalendar.plugins.listPlugin,
+                    window.FullCalendar.plugins.interactionPlugin
+                ],
                 initialView: localStorage.getItem('fc-view') || 'dayGridMonth',
-                locale: 'fr',
+                locale: @js($locale),
                 firstDay: 1,
                 editable: true,
                 selectable: true,
+                nowIndicator: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
-                events: @js($this->getCalendarEvents($items)),
-                
-                {{-- Hooks --}}
-                datesSet: (info) => localStorage.setItem('fc-view', info.view.type),
-                eventClick: (info) => $wire.showItem(info.event.id),
-                eventDrop: (info) => this.sync(info),
-                eventResize: (info) => this.sync(info),
-                select: (info) => $wire.quickCreate(info.startStr),
 
-                {{-- Tooltip Tippy --}}
+                // Données
+                events: @js($this->getCalendarEvents($items)),
+
+                // DESIGN : Custom Render des cartes
+                eventContent: function(arg) {
+                    let color = arg.event.backgroundColor || '#3b82f6';
+                    return {
+                        html: `
+                            <div class='bg-sky-600 shadow-sm overflow-hidden w-full group transition-all elative'>
+                               
+                                <div class='flex flex-col min-w-0'>
+                                    <div class='flex items-center gap-1 overflow-hidden justify-between'>
+                                        <div class='truncate'><span class='text-sm font-semibold text-white truncate'>${arg.event.title}</span></div>
+                                        
+                                        ${arg.timeText ? `<span class='text-sm font-bold text-white'>${arg.timeText}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    };
+                },
+
+                // TOOLTIP : Tippy.js integration
                 eventDidMount: (info) => {
                     if (info.event.extendedProps.tooltip) {
-                        tippy(info.el, {
+                        window.tippy(info.el, {
                             content: info.event.extendedProps.tooltip,
                             allowHTML: true,
                             theme: 'light-border',
@@ -43,15 +65,28 @@
                         });
                     }
                 },
+
+                // INTERACTIONS
+                datesSet: (info) => localStorage.setItem('fc-view', info.view.type),
+                eventClick: (info) => $wire.showItem(info.event.id),
+                eventDrop: (info) => this.sync(info),
+                eventResize: (info) => this.sync(info),
+                select: (info) => $wire.quickCreate(info.startStr),
             });
+
             this.calendar.render();
+        },
+        destroy() {
+            if (this.calendar) {
+                this.calendar.destroy();
+            }
         },
         sync(info) {
             $wire.updateEventDates(info.event.id, info.event.startStr, info.event.endStr);
         }
     }"
     wire:ignore
-    class="bg-white p-4 rounded-2xl border shadow-sm"
+    class="calendar-container p-6 "
 >
     <div x-ref="calendar"></div>
 </div>

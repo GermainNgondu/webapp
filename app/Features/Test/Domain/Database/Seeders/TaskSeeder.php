@@ -20,6 +20,7 @@ class TaskSeeder extends Seeder
         foreach (['todo', 'in_progress', 'review', 'done'] as $status) {
             Task::factory()->create([
                 'title' => "Tâche test pour $status",
+                'description' => "Description de la tâche test pour $status",
                 'status' => $status,
                 'user_id' => 1,
             ]);
