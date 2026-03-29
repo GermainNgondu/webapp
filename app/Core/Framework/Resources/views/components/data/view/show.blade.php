@@ -1,7 +1,7 @@
 @props(['title','item', 'schema', 'mode'=> null])
 
 @if ($mode === 'modal')
-    <flux:modal name="item-detail" variant="side" class="w-full max-w-lg">
+    <flux:modal name="item-detail" variant="side" class="w-full max-w-lg" :dismissible="false">
         @if($this->activeItem)
             <div class="space-y-6">
                 <flux:heading size="lg">{{ $title ??'' }}</flux:heading>    

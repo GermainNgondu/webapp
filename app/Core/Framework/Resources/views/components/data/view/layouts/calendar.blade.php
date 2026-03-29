@@ -1,5 +1,9 @@
-@props(['items', 'schema'])
-@php $locale = app()->getLocale(); @endphp
+@php 
+    $items = $this->items;
+    $actions = $this->getRowActions;
+    $locale = app()->getLocale(); 
+@endphp
+
 <div 
     wire:key="view-calendar-{{ md5(serialize($items->pluck('id'))) }}"
     x-data="{
@@ -68,10 +72,10 @@
 
                 // INTERACTIONS
                 datesSet: (info) => localStorage.setItem('fc-view', info.view.type),
-                eventClick: (info) => $wire.showItem(info.event.id),
+                eventClick: (info) => $wire.handleAction('show',info.event.id),
                 eventDrop: (info) => this.sync(info),
                 eventResize: (info) => this.sync(info),
-                select: (info) => $wire.quickCreate(info.startStr),
+                select: (info) => $wire.handleAction('quick',info.startStr),
             });
 
             this.calendar.render();
@@ -89,4 +93,5 @@
     class="calendar-container p-6 "
 >
     <div x-ref="calendar"></div>
+    <x-core::data.view.partials.quick-create-modal />
 </div>

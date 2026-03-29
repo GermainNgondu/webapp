@@ -15,61 +15,40 @@ abstract class BaseResource
     abstract public static function insightData(): string; // Pour Analytics
 
     /**
-     * Configuration de la Navigation
+     * Label
      */
     public static function label(): string 
     {
         return (string) Str::of(static::class)->afterLast('\\')->replace('Resource', '')->plural();
     }
 
+    /**
+     * Icon
+     */
     public static function icon(): string {
         return 'cube';
     }
 
+    /**
+     * Route
+     */
     public static function route(): string 
     {
         return (string) Str::of(static::class)->afterLast('\\')->replace('Resource', '')->lower()->kebab();
     }
 
     /**
-     * Section 1: DataView (Index / Liste)
+     * Default Sort
      */
-    public static function getIndexAction(): string 
-    {
-        return static::moduleNamespace() . '\\Actions\\Get' . static::resourceName() . 'Action';
-    }
-
     public static function defaultSort(): string {
         return '-created_at';
     }
 
     /**
-     * Section 2: Show (Détail / Item View)
-     */
-    public static function getShowAction(): string 
-    {
-        return static::moduleNamespace() . '\Actions\Find' . static::resourceName() . 'Action';
-    }
-
-    /**
-     * Section 3: DataForm (Create / Edit)
-     */
-    public static function getFormAction(): string 
-    {
-        return static::moduleNamespace() . '\Actions\Upsert' . static::resourceName() . 'Action';
-    }
-
-    // Permet de définir des règles de validation ou un schéma spécifique au formulaire
-    public static function formSchema(): array {
-        return [];
-    }
-
-    /**
-     * Section 4: Data Insights (Analytics / Dashboard)
+     * Insights
      */
     public static function insights(): array
     {
-        // Ici on définira plus tard des widgets (ex: StatWidget, ChartWidget)
         return [];
     }
 
@@ -78,21 +57,35 @@ abstract class BaseResource
      */
     public static function can(string $action, $user = null): bool
     {
-        // Délègue la vérification aux Policies de Laravel
         return ($user ?? auth()->user())->can($action, static::model());
     }
-    /**
-     * Génère le namespace de base du module (ex: App\Features\Media)
-     */
-    public static function moduleNamespace(): string
-    {
-        return (string) Str::beforeLast(static::class, '\\');
-    }
-    /**
-     * Helper interne pour récupérer le nom pur de la ressource (ex: Media)
-     */
-    protected static function resourceName(): string
-    {
-       return (string) Str::of(static::class)->afterLast('\\')->replace('Resource', '');
-    }
+
+    protected static array $resolutionCache = [];
+
+        public static function resolveMetadata(): array
+        {
+            $class = static::class;
+            
+            if (!isset(self::$resolutionCache[$class])) {
+                $name = (string) Str::of($class)->afterLast('\\')->replace('Resource', '');
+                $namespace = (string) Str::beforeLast($class, '\\');
+                
+                self::$resolutionCache[$class] = [
+                    'name'      => $name,
+                    'namespace' => $namespace,
+                    'actions'   => [
+                        'index' => "{$namespace}\\Actions\\Get{$name}Action",
+                        'show'  => "{$namespace}\\Actions\\Find{$name}Action",
+                        'form'  => "{$namespace}\\Actions\\Upsert{$name}Action",
+                    ]
+                ];
+            }
+
+            return self::$resolutionCache[$class];
+        }
+
+    public static function getIndexAction(): string { return static::resolveMetadata()['actions']['index']; }
+    public static function getShowAction(): string  { return static::resolveMetadata()['actions']['show']; }
+    public static function getFormAction(): string  { return static::resolveMetadata()['actions']['form']; }
+    public static function resourceName(): string   { return static::resolveMetadata()['name']; }    
 }

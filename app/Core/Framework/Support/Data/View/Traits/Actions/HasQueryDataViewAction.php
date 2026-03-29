@@ -2,12 +2,12 @@
 
 namespace App\Core\Framework\Support\Data\View\Traits\Actions;
 
-use App\Core\Framework\Support\Data\View\Attributes\{Filter, Column};
-use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
-use Illuminate\Http\Request;
 use ReflectionClass;
+use Illuminate\Http\Request;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
+use App\Core\Framework\Support\Data\View\Attributes\{Filter, Column};
 
 trait HasQueryDataViewAction
 {

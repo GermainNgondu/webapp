@@ -1,21 +1,20 @@
 <?php
 
-namespace App\Core\Framework\Support\Data\View\Traits;
+namespace App\Core\Framework\Support\Data\View\Traits\Layouts;
 
 use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
 
 trait HasCalendarView
 {
-    public function updateEventDates($id, $start, $end = null) {
+    public function updateEventDates($id, $start, $end = null) 
+    {
         $config = LayoutDiscovery::getCalendarConfig($this->getDataClass());
-        $model = ($this->getModel())::findOrFail($id);
+        $config['id'] = $id;
+        $config['_action'] = 'updateEventDates';
+        $config['start'] = \Carbon\Carbon::parse($start)->toDateTimeString();
+        $config['end'] = $end ? \Carbon\Carbon::parse($end)->toDateTimeString() : null;
         
-        $model->update([
-            $config['start'] => \Carbon\Carbon::parse($start)->toDateTimeString(),
-            $config['end']   => $end ? \Carbon\Carbon::parse($end)->toDateTimeString() : null,
-        ]);
-
-        $this->dispatch('notify', message: 'Planning mis à jour !');
+        $this->handleAction('set', $config);
     }
 
     // Préparation JSON pour FullCalendar + Tippy

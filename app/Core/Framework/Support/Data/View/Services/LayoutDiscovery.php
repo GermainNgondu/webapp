@@ -3,177 +3,123 @@
 namespace App\Core\Framework\Support\Data\View\Services;
 
 use ReflectionClass;
+use Illuminate\Support\Facades\Cache;
 use App\Core\Framework\Support\Data\View\Attributes\{
-    Column,
-    Filter,
-    Grid,
-    DataAction,
-    DefaultSort,
-    Detail,
-    KanbanGroup,
-    MapLocation,
-    CalendarDate,
-    DataView
+    Column, Filter, Grid, DataAction, DefaultSort, 
+    Detail, KanbanGroup, MapLocation, CalendarDate
 };
 
 class LayoutDiscovery
 {
-    public static function getSchema(string $dataClass): array
-    {
-        $reflection = new ReflectionClass($dataClass);
-        $schema = [];
+    // Cache statique pour éviter de recalculer durant la même requête HTTP
+    protected static array $registry = [];
 
-        foreach ($reflection->getProperties() as $property) {
-            $attr = $property->getAttributes(Column::class)[0] ?? null;
-            if ($attr) {
-                $instance = $attr->newInstance();
-                $schema[$property->getName()] = (array) $instance;
-            }
-        }
-        return $schema;
-    }
-    public static function getCalendarConfig(string $dataClass): array
+    /**
+     * Analyse la classe de données en un seul passage et met le résultat en cache.
+     */
+    public static function resolve(string $dataClass): array
     {
-        $reflection = new ReflectionClass($dataClass);
-        $config = ['start' => 'created_at', 'end' => null, 'label' => 'title'];
+        if (isset(self::$registry[$dataClass])) {
+            return self::$registry[$dataClass];
+        }
 
-        foreach ($reflection->getProperties() as $prop) {
-            if ($attr = $prop->getAttributes(CalendarDate::class)[0] ?? null) {
-                $inst = $attr->newInstance();
-                $config[$inst->type] = $prop->getName();
-            }
-        }
-        return $config;
-    }
-    public static function getMapConfig(string $dataClass): array
-    {
-        $reflection = new ReflectionClass($dataClass);
-        $config = ['lat' => 'latitude', 'lng' => 'longitude', 'label' => 'file_name'];
+        // Cache persistant pour la production (clé unique par classe)
+        $cacheKey = "dataview_discovery_v1_" . md5($dataClass);
 
-        foreach ($reflection->getProperties() as $prop) {
-            if ($attr = $prop->getAttributes(MapLocation::class)[0] ?? null) {
-                $inst = $attr->newInstance();
-                $config[$inst->type] = $prop->getName();
-            }
-        }
-        return $config;
-    }
-    public static function getKanbanConfig(string $dataClass): ?array 
-    {
-        $reflection = new ReflectionClass($dataClass);
-        foreach ($reflection->getProperties() as $prop) {
-            if ($attr = $prop->getAttributes(KanbanGroup::class)[0] ?? null) {
-                $inst = $attr->newInstance();
-                return [
-                    'field' => $prop->getName(),
-                    'options' => $inst->options,
-                ];
-            }
-        }
-        return null;
-    }
-    public static function getFilters(string $dataClass): array
-    {
-        $reflection = new ReflectionClass($dataClass);
-        $filters = [];
+        self::$registry[$dataClass] = Cache::rememberForever($cacheKey, function () use ($dataClass) {
+            $reflection = new ReflectionClass($dataClass);
+            
+            $schema = [
+                'columns'  => [],
+                'filters'  => [],
+                'grid'     => [],
+                'detail'   => [],
+                'actions'  => [],
+                'sort'     => null,
+                'kanban'   => null,
+                'map'      => ['lat' => 'latitude', 'lng' => 'longitude', 'label' => 'file_name'],
+                'calendar' => ['start' => 'created_at', 'end' => null, 'label' => 'title'],
+            ];
 
-        foreach ($reflection->getProperties() as $property) {
-            $attr = $property->getAttributes(Filter::class)[0] ?? null;
-            if ($attr) {
-                $instance = $attr->newInstance();
-                $data = (array) $instance;
-                
-                // Si c'est une Enum, on extrait les cases automatiquement
-                if (is_string($instance->options) && enum_exists($instance->options)) {
-                    $data['options'] = collect($instance->options::cases())
-                        ->mapWithKeys(fn($case) => [$case->value => $case->name])
-                        ->toArray();
+            // 1. Analyse des attributs au niveau de la CLASSE (Actions & Tri)
+            foreach ($reflection->getAttributes() as $attribute) {
+                $name = $attribute->getName();
+                $inst = $attribute->newInstance();
+
+                if ($name === DataAction::class) {
+                    $schema['actions'][] = (array) $inst;
                 }
+                if ($name === DefaultSort::class) {
+                    $schema['sort'] = ($inst->direction === 'desc' ? '-' : '') . $inst->column;
+                }
+            }
+
+            // 2. Analyse des attributs au niveau des PROPRIÉTÉS (Un seul loop)
+            foreach ($reflection->getProperties() as $property) {
+                $propName = $property->getName();
                 
-                $filters[$property->getName()] = $data;
-            }
-        }
-        return $filters;
-    }
-    public static function getDetailSchema(string $dataClass): array
-    {
-        $reflection = new ReflectionClass($dataClass);
-        $schema = [];
+                foreach ($property->getAttributes() as $attr) {
+                    $attrName = $attr->getName();
+                    $inst = $attr->newInstance();
 
-        foreach ($reflection->getProperties() as $property) {
-            $attr = $property->getAttributes(Detail::class)[0] ?? null;
-            if ($attr) {
-                $instance = $attr->newInstance();
-                $schema[$instance->section][] = [
-                    'field'     => $property->getName(),
-                    'label'     => $instance->label,
-                    'component' => $instance->component,
-                    'order'     => $instance->order,
-                ];
-            }
-        }
-        // Optionnel : on trie les champs par 'order' dans chaque section
-        return $schema;
-    }
-    public static function getGridSchema(string $dataClass): array
-    {
-        $reflection = new ReflectionClass($dataClass);
-        $gridConfig = [];
+                    match ($attrName) {
+                        Column::class => 
+                            $schema['columns'][$propName] = (array) $inst,
+                        
+                        Filter::class => 
+                            $schema['filters'][$propName] = self::parseFilter($inst),
+                        
+                        Grid::class => 
+                            $schema['grid'][$inst->position] = ['field' => $propName, 'icon' => $inst->icon],
+                        
+                        Detail::class => 
+                            $schema['detail'][$inst->section][] = [
+                                'field' => $propName, 'label' => $inst->label, 
+                                'component' => $inst->component, 'order' => $inst->order
+                            ],
+                        
+                        KanbanGroup::class => 
+                            $schema['kanban'] = ['field' => $propName, 'options' => $inst->options],
+                        
+                        MapLocation::class => 
+                            $schema['map'][$inst->type] = $propName,
+                        
+                        CalendarDate::class => 
+                            $schema['calendar'][$inst->type] = $propName,
 
-        foreach ($reflection->getProperties() as $property) {
-            $attr = $property->getAttributes(Grid::class)[0] ?? null;
-            if ($attr) {
-                $instance = $attr->newInstance();
-                // On indexe par position pour un accès rapide dans Blade
-                $gridConfig[$instance->position] = [
-                    'field' => $property->getName(),
-                    'icon'  => $instance->icon,
-                ];
+                        default => null
+                    };
+                }
             }
-        }
-        return $gridConfig;
+            return $schema;
+        });
+
+        return self::$registry[$dataClass];
     }
 
     /**
-     * Extrait les actions définies au niveau de la classe Data
+     * Helper pour traiter les Enums dans les filtres
      */
-    public static function getActions(string $dataClass): array
+    protected static function parseFilter($instance): array
     {
-        $reflection = new ReflectionClass($dataClass);
-        $actions = [];
-
-        // On récupère tous les attributs DataAction (grâce au flag IS_REPEATABLE)
-        $attributes = $reflection->getAttributes(DataAction::class);
-
-        foreach ($attributes as $attribute) {
-            $instance = $attribute->newInstance();
-            
-            // On transforme l'objet en tableau pour faciliter l'usage dans Blade
-            $actions[] = [
-                'name'     => $instance->name,
-                'label'    => $instance->label,
-                'icon'     => $instance->icon,
-                'isGlobal' => $instance->isGlobal,
-                'isBulk'   => $instance->isBulk,
-                'variant'  => $instance->variant,
-                'color'    => $instance->color,
-                'confirm'  => $instance->confirm,
-            ];
+        $data = (array) $instance;
+        if (is_string($instance->options) && enum_exists($instance->options)) {
+            $data['options'] = collect($instance->options::cases())
+                ->mapWithKeys(fn($case) => [$case->value => $case->name])
+                ->toArray();
         }
-
-        return $actions;
+        return $data;
     }
 
-    public static function getDefaultSort(string $dataClass): ?string
-    {
-        $reflection = new ReflectionClass($dataClass);
-        $attr = $reflection->getAttributes(DefaultSort::class)[0] ?? null;
-
-        if ($attr) {
-            $instance = $attr->newInstance();
-            return ($instance->direction === 'desc' ? '-' : '') . $instance->column;
-        }
-
-        return null;
-    }
+    // Méthodes de compatibilité (Proxy vers resolve())
+    public static function getSchema(string $class): array { return self::resolve($class)['columns']; }
+     public static function getGridSchema(string $class): array { return self::resolve($class)['grid']; }
+    public static function getCalendarConfig(string $class): array { return self::resolve($class)['calendar']; }
+    public static function getKanbanConfig(string $class): ?array { return self::resolve($class)['kanban']; }
+    public static function getMapConfig(string $class): array { return self::resolve($class)['map']; }
+    public static function getDetailSchema(string $class): array { return self::resolve($class)['detail']; }
+    public static function getFilters(string $class): array { return self::resolve($class)['filters']; }
+    public static function getActions(string $class): array { return self::resolve($class)['actions']; }
+    public static function getDefaultSort(string $class): ?string { return self::resolve($class)['sort']; }
+    
 }

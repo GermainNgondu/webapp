@@ -1,11 +1,14 @@
-@props([
-    'view'=> 'table', 
-    'items', 
-    'schema', 
-    'availableViews' => [],
-    'resource'=> null
-])
+@props(['availableViews' => []])
 
+@php
+    $view = $this->view;
+    $schema = $this->schema;
+    $items = $this->items;
+    $filters = $this->getAllFilters;
+    $globalActions = $this->getGlobalActions;
+    $rowActions = $this->getRowActions;
+    $bulkActions = $this->getBulkActions;
+@endphp
 <div 
     x-data="{ 
         selected: $wire.entangle('selected'),
@@ -26,15 +29,17 @@
                         @endforeach
                     </flux:radio.group>
                 @endif
+                @if ($view == 'table' || $view == 'grid')
                 <x-core::data.view.parts.search/>
-                <div wire:loading wire:target="handleAction, showItem, updateItemStatus">
+                @endif
+                <div wire:loading wire:target="handleAction, showItem, updateItemStatus, updateEventDates">
                     <flux:icon.loading />
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <x-core::data.view.parts.filters :schema="$this->filterSchema" />
-                <x-core::data.view.actions.global :actions="$this->globalActions"/>
+                <x-core::data.view.parts.filters :schema="$filters" />
+                <x-core::data.view.actions.global :actions="$globalActions"/>
             </div>
                 
         </div>        
@@ -44,16 +49,11 @@
         <x-core::data.view.parts.skeleton :view="$view" :schema="$this->schema" />
 
         <div wire:loading.remove  
-            wire:target.except="handleAction, handleBulkAction, selected, quickCreate, saveQuickItem,showItem,updateItemStatus">
+            wire:target.except="handleAction, handleBulkAction, selected, 
+            quickCreate, saveQuickItem,showItem,updateItemStatus, updateEventDates">
 
             <div class="mt-4">
-                <x-dynamic-component 
-                    :component="'core::data.view.layouts.' . $view" 
-                    :items="$items" 
-                    :schema="$schema" 
-                    :actions="$this->actions"
-                    :resource="$resource"
-                />
+                <x-dynamic-component :component="'core::data.view.layouts.' . $view" />
             </div>        
         </div>        
     </div>
@@ -64,10 +64,8 @@
             <x-core::data.view.parts.pagination :items="$items" />
         @endif
     </div>
-    <x-core::data.view.actions.bulk-bar 
-            :actions="$this->actions['bulk'] ?? []" 
-            :selected="$this->selected"
-        />
+
+    <x-core::data.view.actions.bulk-bar :actions="$bulkActions" :selected="$this->selected" />
 
     <x-core::data.view.show :item="$this->activeItem" :schema="$this->detailSchema" :mode="$this->mode" />
 

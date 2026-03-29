@@ -1,9 +1,9 @@
-@props(['items', 'schema','resource'])
-
-@php
+@php    
+    $items = $this->items;
+    $actions = $this->getRowActions;
     use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
     // Récupération dynamique de la configuration Kanban depuis la Resource
-    $kanbanConfig = LayoutDiscovery::getKanbanConfig($resource::listData());
+    $kanbanConfig = LayoutDiscovery::getKanbanConfig($this->getDataClass('list'));
     
     $groups = $kanbanConfig['options'] ?? [];
     $groupField = $kanbanConfig['field'];
@@ -12,13 +12,14 @@
     
     // Groupement des items par le champ défini (ex: status)
     $groupedItems = $items->groupBy($groupField);
+
 @endphp
 
 <div wire:key="view-kanban-{{ md5(serialize($items->pluck('id'))) }}" 
     class="flex overflow-x-auto pb-6 gap-6 items-start scrollbar-hide px-2">
     @foreach($groups as $statusValue => $statusLabel)
         <div 
-            class="shrink-0 w-80 flex flex-col rounded-2xl bg-zinc-50/50 border border-zinc-100 p-4 min-h-[500px]"
+            class="shrink-0 w-80 flex flex-col rounded-2xl bg-zinc-50/50 border border-zinc-100 p-4 min-h-[500px] dark:border-zinc-800 dark:bg-white/10"
             x-data="{ 
                 init() {
                     new Sortable($refs.list, {
@@ -39,23 +40,35 @@
             {{-- Header de la colonne --}}
             <div class="flex items-center justify-between mb-5 px-1">
                 <div class="flex items-center gap-2">
-                    <span class="size-2 rounded-full bg-zinc-300"></span>
                     <flux:heading size="sm" class="font-bold uppercase tracking-widest">
                         {{ $statusLabel }}
                     </flux:heading>
+                    
                 </div>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200/50">
-                    {{ $groupedItems->get($statusValue)?->count() ?? 0 }}
-                </span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200/50">
+                        {{ $groupedItems->get($statusValue)?->count() ?? 0 }}
+                    </span>
+                    <flux:button 
+                        wire:click="handleAction('quick','{{ $statusValue }}')" 
+                        variant="subtle" 
+                        icon="plus" 
+                        size="sm" 
+                        :loading="false"
+                        class="cursor-pointer"
+                     />                    
+                </div>
+
             </div>
 
             {{-- Zone de Drop (Liste des cartes) --}}
-            <div x-ref="list" data-status="{{ $statusValue }}" class="flex-1 space-y-3 min-h-[150px]">
+            <div x-ref="list" data-status="{{ $statusValue }}" class="max-h-[calc(100vh-150px)] flex-1 space-y-3 min-h-[150px] overflow-auto">
                 @foreach($groupedItems->get($statusValue) ?? [] as $item)
                     <div 
                         data-id="{{ $item->id }}" 
                         wire:click="showItem('{{ $item->id }}')"
-                        class="group bg-white border border-zinc-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-zinc-300 cursor-grab active:cursor-grabbing transition-all"
+                        class="group bg-white border border-zinc-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-zinc-300 
+                            cursor-grab active:cursor-grabbing transition-all  dark:border-white/20  dark:bg-white/20"
                     >
                         <div class="flex flex-col gap-3">
                             {{-- ID & Badge de priorité (si existant) --}}
@@ -70,10 +83,11 @@
                                         {{ $item->priority }}
                                     </span>
                                 @endif
+                                <x-core::data.view.actions.row :actions="$actions" :item="$item" :grid="true"/>
                             </div>
 
                             {{-- Titre dynamique --}}
-                            <p class="text-sm font-semibold leading-snug text-zinc-800 group-hover:text-zinc-600 transition-colors">
+                            <p class="text-sm font-semibold leading-snug text-zinc-800 dark:text-white/70 transition-colors">
                                 {{ $item->{$labelField} ?? $item->file_name ?? 'Sans titre' }}
                             </p>
 
@@ -99,15 +113,7 @@
                     </div>
                 @endforeach
             </div>
-
-            {{-- Bouton Quick Add --}}
-            <flux:button 
-                wire:click="quickCreate('{{ $statusValue }}')" 
-                icon="plus"
-                class="cursor-pointer mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-zinc-200 rounded-xl text-[11px] font-bold text-zinc-400 hover:text-zinc-600 hover:border-zinc-200 hover:bg-zinc-50/50 transition-all"
-            >
-                <span>AJOUTER</span>
-            </flux:button>
+            
         </div>
     @endforeach
 

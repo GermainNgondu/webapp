@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Framework\Support\Data\View\Traits;
+namespace App\Core\Framework\Support\Data\View\Traits\Layouts;
 
 use Livewire\Attributes\Computed;
 use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;

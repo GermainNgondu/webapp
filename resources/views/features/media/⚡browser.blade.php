@@ -35,7 +35,7 @@ public $targetProperty; // La propriété du formulaire à mettre à jour
 ?>
 
 <div> {{-- <-- On déclare et on lie la variable ici --}}
-    <flux:modal name="media-selector-modal" class="md:w-7xl p-0">
+    <flux:modal name="media-selector-modal" class="md:w-7xl p-0" :dismissible="false">
         <div class="flex h-[600px] bg-white dark:bg-zinc-900" x-data="{ view: 'browse' }">
             {{-- Sidebar Mini --}}
             <div class="w-16 border-r border-zinc-200 dark:border-zinc-800 flex flex-col items-center py-4 gap-4">

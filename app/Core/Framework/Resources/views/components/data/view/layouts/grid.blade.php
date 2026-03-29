@@ -1,4 +1,3 @@
-@props(['items', 'schema'])
 @php
     use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
     /** @var LayoutDiscovery $discovery */
@@ -6,6 +5,8 @@
     
     // On récupère la configuration de la grille depuis la classe Data
     $grid = $discovery::getGridSchema($this->getDataClass());
+    $items = $this->items;
+    $actions = $this->getRowActions;
 @endphp
 
 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -90,49 +91,8 @@
                     </div>
 
                     {{-- ACTIONS (Dropdown avec Portail Alpine.js) --}}
-                    @if(count($this->actions['row'] ?? []) > 0)
-                        <div x-data="{ open: false, position: { top: 0, left: 0 } }">
-                            <button 
-                                type="button" 
-                                x-on:click="
-                                    open = ! open; 
-                                    if(open) {
-                                        const rect = $el.getBoundingClientRect(); 
-                                        position = { top: (rect.bottom + window.scrollY) + 'px', left: (rect.right - 192 + window.scrollX) + 'px' };
-                                    }
-                                "
-                                x-on:click.away="open = false"
-                                class="cursor-pointer rounded-md p-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600 focus:outline-none"
-                            >
-                                <flux:icon icon="ellipsis-vertical" variant="mini" />
-                            </button>
-
-                            <template x-teleport="body">
-                                <div 
-                                    x-show="open" 
-                                    x-transition:enter="transition ease-out duration-100"
-                                    x-transition:enter-start="transform opacity-0 scale-95"
-                                    x-transition:enter-end="transform opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    class="absolute z-50 w-48 rounded-xl border border-zinc-200 bg-white p-1.5 shadow-2xl flex flex-col gap-0.5"
-                                    :style="'top: ' + position.top + '; left: ' + position.left + ';'"
-                                    style="display: none;"
-                                >
-                                    @foreach($this->actions['row'] as $action)
-                                        <button 
-                                            type="button"
-                                            wire:click="handleAction('{{ $action['name'] }}', '{{ $item->id }}')"
-                                            x-on:click="open = false"
-                                            @if($action['confirm']) wire:confirm="{{ $action['confirm'] }}" @endif
-                                            class="cursor-pointer flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition hover:bg-zinc-50 {{ $action['color'] === 'red' ? 'text-red-600 hover:bg-red-50' : 'text-zinc-700' }}"
-                                        >
-                                            <flux:icon :icon="$action['icon']" variant="mini" />
-                                            {{ $action['label'] }}
-                                        </button>
-                                    @endforeach
-                                </div>
-                            </template>
-                        </div>
+                    @if(count($actions ?? []) > 0)
+                         <x-core::data.view.actions.row :actions="$actions" :item="$item" :grid="true"/>
                     @endif
                 </div>
 

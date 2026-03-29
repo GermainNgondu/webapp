@@ -1,7 +1,7 @@
 <?php
 namespace App\Core\Framework\Support\Data\View\Contracts;
 
-abstract class BaseShowAction
+abstract class BaseDataClassShowAction
 {
     abstract protected function getModel(): string;
     abstract protected function getDataClass(): string;

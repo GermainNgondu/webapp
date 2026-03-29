@@ -1,8 +1,8 @@
-@props([
-    'items',
-    'schema',
-    'actions' => []
-])
+@php
+    $items = $this->items;
+    $actions = $this->getRowActions;
+@endphp
+
 @if($items->isEmpty())
     <x-core::data.view.parts.empty />
 @else
@@ -44,7 +44,7 @@
                         </flux:table.cell>
                     @endforeach
                     <flux:table.cell>
-                        <x-core::data.view.actions.row :actions="$actions['row'] ?? []" :item="$item" />
+                        <x-core::data.view.actions.row :actions="$actions" :item="$item" />
                     </flux:table.cell>
                 </flux:table.row>
             @endforeach

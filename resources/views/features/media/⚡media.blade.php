@@ -35,12 +35,12 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
      */
     public function delete($id): void
     {
-
+        dd($id, 'delete');
     }
 
     public function bulkDelete(array $ids): void
     {
-
+        dd($ids, 'bulk');
     }
 
     #[On('media-imported')]
@@ -65,7 +65,7 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
         </div>
     </div>
 
-    <x-core::data.view :view="$this->view" :items="$this->items()" :schema="$this->schema" :available-views="['grid', 'table']"/>
+    <x-core::data.view :available-views="['grid', 'table']" />
 
     <livewire:features::media.uploader />
 

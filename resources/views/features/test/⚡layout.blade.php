@@ -3,7 +3,8 @@
 use Flux\Flux;
 use Livewire\Component;
 use Livewire\Attributes\{Layout,Lazy,Title};
-use App\Core\Framework\Support\Data\View\Traits\{HasResource,HasCalendarView,HasKanbanView,HasMapView};
+use App\Core\Framework\Support\Data\View\Traits\Layouts\{HasCalendarView,HasKanbanView,HasMapView};
+use App\Core\Framework\Support\Data\View\Traits\HasResource;
 use App\Features\Test\TaskResource;
 
 new #[Lazy,Title('Test Layout'),Layout('admin::layouts.admin')] class extends Component
@@ -15,6 +16,21 @@ new #[Lazy,Title('Test Layout'),Layout('admin::layouts.admin')] class extends Co
     public function mount():void
     {
         $this->view = 'kanban';
+    }
+
+    public function set($data): void
+    {
+        dd($data, 'set data');
+    }
+
+    public function show(string|int $id): void
+    {
+        dd($id, 'show item');
+    }
+
+    public function quick($id): void
+    {
+        dd($id);
     }
 };
 ?>
@@ -31,12 +47,6 @@ new #[Lazy,Title('Test Layout'),Layout('admin::layouts.admin')] class extends Co
         </div>
     </div>
 
-    <x-core::data.view 
-        :view="$this->view" 
-        :items="$this->items()" 
-        :schema="$this->schema"
-        :resource="$this->getResource()"
-        :availableViews="['kanban','calendar','map','table']"
-    />
+    <x-core::data.view :resource="$this->getResource()" :availableViews="['kanban','calendar','map','table']"/>
 
 </div>
