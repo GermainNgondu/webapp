@@ -20,11 +20,14 @@ class TestServiceProvider extends ServiceProvider
             $this->loadMigrationsFrom($modulePath . '/Domain/Database/Migrations');
         }
 
-        $layout->addSecondary(new NavigationItemData(
+        $layout->addPrimary(NavigationItemData::make(
             label: 'Test',
-            route: 'admin.test.index',
             icon: 'bug',
-            order: 1,
+            order: 3,
+            children: [
+                    ['label' => 'Tasks', 'route' => 'admin.test.index', 'icon' => 'tasks'],
+                    ['label' => 'Deliveries', 'route' => 'admin.test.deliveries', 'icon' => 'truck'],
+                ]
         ));
     }
 }

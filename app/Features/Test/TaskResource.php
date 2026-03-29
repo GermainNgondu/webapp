@@ -4,10 +4,10 @@ namespace App\Features\Test;
 
 
 use App\Core\Framework\Support\Resource\Contracts\BaseResource;
-use App\Features\Test\Domain\Data\TaskDetailData;
-use App\Features\Test\Domain\Data\TaskFormData;
-use App\Features\Test\Domain\Data\TaskInsightData;
-use App\Features\Test\Domain\Data\TaskListData;
+use App\Features\Test\Domain\Data\Task\TaskDetailData;
+use App\Features\Test\Domain\Data\Task\TaskFormData;
+use App\Features\Test\Domain\Data\Task\TaskInsightData;
+use App\Features\Test\Domain\Data\Task\TaskListData;
 use App\Features\Test\Domain\Models\Task;
 
 class TaskResource extends BaseResource {

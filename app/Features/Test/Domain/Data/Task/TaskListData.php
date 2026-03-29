@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Test\Domain\Data;
+namespace App\Features\Test\Domain\Data\Task;
 
 use App\Core\Framework\Support\Data\View\Attributes\{KanbanGroup,Column,CalendarDate};
 use Spatie\LaravelData\Data;

@@ -37,7 +37,7 @@ class LayoutDiscovery
                 'actions'  => [],
                 'sort'     => null,
                 'kanban'   => null,
-                'map'      => ['lat' => 'latitude', 'lng' => 'longitude', 'label' => 'file_name'],
+                'map'      => ['lat' => 'latitude', 'lng' => 'longitude', 'label' => '', 'title' => '', 'description' => ''],
                 'calendar' => ['start' => 'created_at', 'end' => null, 'label' => 'title'],
             ];
 

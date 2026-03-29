@@ -18,6 +18,7 @@ class Task extends Model {
         'started_at' => 'datetime',
         'due_at' => 'datetime',
     ];
+    
     /**
      * Crée une nouvelle instance de la factory pour le modèle.
      */

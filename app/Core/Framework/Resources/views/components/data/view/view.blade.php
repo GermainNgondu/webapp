@@ -1,18 +1,15 @@
-@props(['availableViews' => []])
+@props(['view'=> null,'availableViews' => []])
 
 @php
-    $view = $this->view;
-    $schema = $this->schema;
-    $items = $this->items;
+    $view ??= $this->view;
     $filters = $this->getAllFilters;
     $globalActions = $this->getGlobalActions;
-    $rowActions = $this->getRowActions;
     $bulkActions = $this->getBulkActions;
 @endphp
 <div 
     x-data="{ 
         selected: $wire.entangle('selected'),
-        pageIds: {{ json_encode($items->pluck('id')->toArray()) }},
+        pageIds: {{ json_encode($this->items->pluck('id')->toArray()) }},
         toggleAll() {
             this.selected = this.selected.length === this.pageIds.length ? [] : [...this.pageIds];
         }

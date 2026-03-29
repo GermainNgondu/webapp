@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Test\Domain\Data;
+namespace App\Features\Test\Domain\Data\Task;
 
 use App\Features\Test\Domain\Models\Task;
 use Spatie\LaravelData\Data;

@@ -11,7 +11,7 @@ trait HasMapView
 
     public function toggleLive() {
         $this->isLive = !$this->isLive;
-        $this->dispatch('notify', $this->isLive ? 'Mode Live activé' : 'Mode Statique');
+        $this->dispatch('notify', message :$this->isLive ? 'Mode Live activé' : 'Mode Statique');
     }
 
     #[Computed]
@@ -24,6 +24,9 @@ trait HasMapView
             'lat' => (float) $item->{$config['lat']},
             'lng' => (float) $item->{$config['lng']},
             'label' => $item->{$config['label']},
+            'title' => $item->{$config['title']},
+            'description' => $item->{$config['description']},
+            'status' => $item->{$config['status']},
             'preview' => $item->url ?? null,
         ])->filter(fn($m) => $m['lat'] && $m['lng'])->values()->toArray();
     }
