@@ -1,10 +1,5 @@
 @php
-    use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
-    /** @var LayoutDiscovery $discovery */
-    $discovery = app(LayoutDiscovery::class);
-    
-    // On récupère la configuration de la grille depuis la classe Data
-    $grid = $discovery::getGridSchema($this->getDataClass());
+    $grid = $this->schema['grid'];
     $items = $this->items;
     $actions = $this->getRowActions;
 @endphp

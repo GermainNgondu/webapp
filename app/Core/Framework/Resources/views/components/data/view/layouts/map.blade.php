@@ -1,12 +1,7 @@
 @php
     $items = $this->items;
     $actions = $this->getRowActions;
-    /** * On utilise le resolve() optimisé qui scanne la classe une seule fois
-     * et met tout en cache statique/persistant.
-     */
-    $discovery = \App\Core\Framework\Support\Data\View\Services\LayoutDiscovery::resolve($this->getDataClass('list'));
-    
-    $mapConfig = $discovery['map'];
+    $mapConfig = $this->schema['map'];
 
     $label =$mapConfig['label'];
     $title =$mapConfig['title'] ?? '';

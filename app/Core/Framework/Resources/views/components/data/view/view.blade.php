@@ -58,7 +58,7 @@
 
     <div wire:loading.remove  wire:target.except="handleAction">
         @if ($view == 'table' || $view == 'grid')
-            <x-core::data.view.parts.pagination :items="$items" />
+            <x-core::data.view.parts.pagination :items="$this->items" />
         @endif
     </div>
 

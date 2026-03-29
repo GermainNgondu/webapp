@@ -1,5 +1,6 @@
 @php
     $items = $this->items;
+    $schema = $this->schema['columns'];
     $actions = $this->getRowActions;
 @endphp
 

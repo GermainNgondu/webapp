@@ -1,9 +1,8 @@
 @php    
     $items = $this->items;
     $actions = $this->getRowActions;
-    use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
     // Récupération dynamique de la configuration Kanban depuis la Resource
-    $kanbanConfig = LayoutDiscovery::getKanbanConfig($this->getDataClass('list'));
+    $kanbanConfig = $this->schema['kanban'];
     
     $groups = $kanbanConfig['options'] ?? [];
     $groupField = $kanbanConfig['field'];
