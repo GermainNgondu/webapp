@@ -34,11 +34,11 @@
         }"
     >
         {{-- Zone Dropzone --}}
-        <div x-ref="dzContainer" class="dropzone p-12">
+        <div x-ref="dzContainer" class="dropzone p-12 dark:border-white">
             <div class="dz-message">
                 <div class="flex flex-col items-center justify-center gap-4">
                     <div class="p-4 bg-white dark:bg-zinc-800 rounded-full shadow-sm cursor-pointer">
-                        <flux:icon.arrow-up-tray class="size-8 text-zinc-500" />
+                        <flux:icon.arrow-up-tray class="size-8 text-zinc-500 dark:text-white" />
                     </div>
                     <div class="text-center">
                         <p class="text-sm font-medium text-zinc-900 dark:text-white">

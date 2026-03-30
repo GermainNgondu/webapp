@@ -44,6 +44,7 @@
                                {{ $action['color'] === 'red' ? 'text-red-600 hover:bg-red-50' : 'text-zinc-700' }}"
                                     
                         wire:click="handleAction('{{ $action['name'] }}', '{{ $item->id }}')"
+                        wire:island="data-view"
                                     
                         @if($action['confirm'])
                             wire:confirm="{{ $action['confirm'] }}"

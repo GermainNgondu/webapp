@@ -23,6 +23,9 @@ trait HasDataViewCommon
     #[Url()]
     public string $view;
 
+    #[Url()]
+    public string $refresh = 'no';
+
     public int $perPage = 25;
     public array $selected = [];
     public string $context = 'list';
@@ -99,7 +102,7 @@ trait HasDataViewCommon
              'kanban' => LayoutDiscovery::getKanbanConfig($this->getDataClass($context)),
              'map' => LayoutDiscovery::getMapConfig($this->getDataClass($context)),
              'calendar' => LayoutDiscovery::getCalendarConfig($this->getDataClass($context)),
-             default => LayoutDiscovery::getColumnsSchema($this->getDataClass($context)),
+             default => []
         };
         
     }
@@ -183,7 +186,7 @@ trait HasDataViewCommon
         if (method_exists($this, $actionName)) {
             $this->{$actionName}($data);
         } else {
-           $this->dispatch('notify', message: "action not exist: $actionName");
+           $this->dispatch('notify', variant: 'error', message: "action not exist: $actionName");
         }
     }
 

@@ -5,6 +5,7 @@
         <flux:button 
             :variant="$action['variant']"
             wire:click="handleAction('{{ $action['name'] }}')"
+            wire:island="data-view"
             class="cursor-pointer"
         >
             {{ $action['label'] }}
@@ -14,6 +15,7 @@
             :icon="$action['icon']" 
             :variant="$action['variant']"
             wire:click="handleAction('{{ $action['name'] }}')"
+            wire:island="data-view"
             class="cursor-pointer"
         />
     @else
@@ -21,6 +23,7 @@
             :icon="$action['icon']"
             :variant="$action['variant']"
             wire:click="handleAction('{{ $action['name'] }}')"
+            wire:island="data-view"
             class="cursor-pointer"
         >
             {{ $action['label'] }}

@@ -12,7 +12,6 @@ new #[Lazy] class extends Component
 ?>
 
 <div class="space-y-6">
-
     {{-- Header --}}
     @error('form_global')
         <x-core::ui.alert :message="$message" type="error"/>

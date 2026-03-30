@@ -107,7 +107,12 @@ trait HasForm
 
             throw ValidationException::withMessages(
                 collect($e->errors())
-                    ->mapWithKeys(fn ($messages, $key) => ["{$key}" => $messages])
+                    ->mapWithKeys(function ($messages, $key) {
+                        if(str_contains($key, 'form.')) {
+                            return ["{$key}" => $messages];
+                        }
+                        return ["form.{$key}" => $messages];
+                    })
                     ->all()
             );
 

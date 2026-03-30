@@ -44,9 +44,9 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
     }
 
     #[On('media-imported')]
-    public function refresh():void
+    public function refreshItems():void
     {
-
+       $this->refresh = 'yes';
     }
 
 
@@ -66,7 +66,6 @@ new #[Lazy,Title('Médias'),Layout('admin::layouts.admin')] class extends Compon
     </div>
 
     <x-core::data.view :available-views="['grid', 'table']" />
-
     <livewire:features::media.uploader />
 
 </div>
