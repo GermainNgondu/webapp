@@ -6,7 +6,7 @@ use ReflectionClass;
 use Illuminate\Http\Request;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
-use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscoveryService;
 use App\Core\Framework\Support\Data\View\Attributes\{Filter, Column};
 
 trait HasQueryDataViewAction
@@ -44,7 +44,7 @@ trait HasQueryDataViewAction
     
     protected function getDefaultSort(): ?string
     {
-        return LayoutDiscovery::getDefaultSort($this->getDataClass());
+        return LayoutDiscoveryService::getDefaultSort($this->getDataClass());
     }
     
     protected function discoverFilters(): array

@@ -49,7 +49,7 @@
 
         <div wire:loading.remove  
             wire:target.except="handleAction, handleBulkAction, selected, 
-            quickCreate, saveQuickItem,showItem,updateItemStatus, updateEventDates">
+            quickCreate, saveQuickItem,showItem,toggleLive,updateItemStatus, updateEventDates">
 
             <div class="mt-4">
                 <x-dynamic-component :component="'core::data.view.layouts.' . $view" />

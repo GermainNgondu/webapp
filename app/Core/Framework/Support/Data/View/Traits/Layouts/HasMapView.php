@@ -3,7 +3,7 @@
 namespace App\Core\Framework\Support\Data\View\Traits\Layouts;
 
 use Livewire\Attributes\Computed;
-use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscoveryService;
 
 trait HasMapView
 {
@@ -16,7 +16,7 @@ trait HasMapView
 
     #[Computed]
     public function mapMarkers() {
-        $config = LayoutDiscovery::getMapConfig($this->getDataClass($this->context));
+        $config = LayoutDiscoveryService::getMapConfig($this->getDataClass($this->context));
         
         // On récupère les items et on les mappe pour Leaflet
         return $this->items()->map(fn($item) => [

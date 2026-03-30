@@ -4,7 +4,7 @@
 
 <div wire:loading.delay.short 
     wire:target.except="handleAction, handleBulkAction, selected,quickCreate,saveQuickItem,showItem,
-    updateItemStatus,updateEventDates" 
+    updateItemStatus,updateEventDates,toggleLive" 
     class="w-full animate-pulse">
     @if($view === 'table')
         {{-- Skeleton TABLE --}}

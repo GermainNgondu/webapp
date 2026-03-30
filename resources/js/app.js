@@ -14,6 +14,9 @@ import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Chart from 'chart.js/auto';
+
+
 
 // Fix pour les icônes par défaut de Leaflet avec Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -48,6 +51,8 @@ window.FullCalendar = {
 window.tippy = tippy;
 
 window.L = L;
+
+window.Chart = Chart;
 
 // On définit la langue par défaut
 flatpickr.localize(French);

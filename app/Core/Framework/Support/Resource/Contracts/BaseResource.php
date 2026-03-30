@@ -45,14 +45,6 @@ abstract class BaseResource
     }
 
     /**
-     * Insights
-     */
-    public static function insights(): array
-    {
-        return [];
-    }
-
-    /**
      * Autorisations (Policies)
      */
     public static function can(string $action, $user = null): bool

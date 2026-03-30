@@ -2,13 +2,13 @@
 
 namespace App\Core\Framework\Support\Data\View\Traits\Layouts;
 
-use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscoveryService;
 
 trait HasCalendarView
 {
     public function updateEventDates($id, $start, $end = null) 
     {
-        $config = LayoutDiscovery::getCalendarConfig($this->getDataClass());
+        $config = LayoutDiscoveryService::getCalendarConfig($this->getDataClass());
         $config['id'] = $id;
         $config['_action'] = 'updateEventDates';
         $config['start'] = \Carbon\Carbon::parse($start)->toDateTimeString();
@@ -21,8 +21,8 @@ trait HasCalendarView
     public function getCalendarEvents($items)
     {
         $dataClass = $this->getDataClass();
-        $calendar  = LayoutDiscovery::getCalendarConfig($dataClass);
-        $kanban    = LayoutDiscovery::getKanbanConfig($dataClass);
+        $calendar  = LayoutDiscoveryService::getCalendarConfig($dataClass);
+        $kanban    = LayoutDiscoveryService::getKanbanConfig($dataClass);
 
         return collect($items->items())->map(fn($item) => [
             'id'    => $item->id,

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use ReflectionClass;
 
-class LayoutDiscovery
+class LayoutDiscoveryService
 {
     // Cache statique pour éviter de recalculer durant la même requête HTTP
     protected static array $registry = [];

@@ -2,10 +2,11 @@
 
 namespace App\Core\Framework\Support\Data\View\Traits\Shared;
 
+use App\Core\Framework\Support\Data\Insight\Services\InsightDiscoveryService;
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscoveryService;
 use Flux\Flux;
-use Livewire\Attributes\{Url,Computed};
 use Livewire\{WithPagination,WithFileUploads};
-use App\Core\Framework\Support\Data\View\Services\LayoutDiscovery;
+use Livewire\Attributes\{Url,Computed};
 
 trait HasDataViewCommon
 {
@@ -40,7 +41,7 @@ trait HasDataViewCommon
     public function mountHasResource(): void
     {
         if (empty($this->sort)) {
-            $this->sort = LayoutDiscovery::getDefaultSort($this->getListDataClass());
+            $this->sort = LayoutDiscoveryService::getDefaultSort($this->getListDataClass());
         }
     }
 
@@ -63,7 +64,7 @@ trait HasDataViewCommon
     #[Computed]
     public function getAllFilters(): array
     {
-        return LayoutDiscovery::getFilters($this->getDataClass($this->context));
+        return LayoutDiscoveryService::getFilters($this->getDataClass($this->context));
     }
 
     /**
@@ -96,12 +97,13 @@ trait HasDataViewCommon
     public function schema(string $context): array 
     {
         return match ($context) {
-             'list' => LayoutDiscovery::getColumnsSchema($this->getDataClass($context)),
-             'grid' => LayoutDiscovery::getGridSchema($this->getDataClass($context)),
-             'detail' => LayoutDiscovery::getDetailSchema($this->getDataClass($context)),
-             'kanban' => LayoutDiscovery::getKanbanConfig($this->getDataClass($context)),
-             'map' => LayoutDiscovery::getMapConfig($this->getDataClass($context)),
-             'calendar' => LayoutDiscovery::getCalendarConfig($this->getDataClass($context)),
+             'list' => LayoutDiscoveryService::getColumnsSchema($this->getDataClass($context)),
+             'grid' => LayoutDiscoveryService::getGridSchema($this->getDataClass($context)),
+             'detail' => LayoutDiscoveryService::getDetailSchema($this->getDataClass($context)),
+             'kanban' => LayoutDiscoveryService::getKanbanConfig($this->getDataClass($context)),
+             'map' => LayoutDiscoveryService::getMapConfig($this->getDataClass($context)),
+             'calendar' => LayoutDiscoveryService::getCalendarConfig($this->getDataClass($context)),
+             'widgets' => InsightDiscoveryService::discover($this->getDataClass($context)),
              default => []
         };
         
@@ -168,7 +170,7 @@ trait HasDataViewCommon
     public function actions(): array
     {
         // On récupère toutes les actions via le service
-        $allActions = LayoutDiscovery::getActions($this->getDataClass($this->context));
+        $allActions = LayoutDiscoveryService::getActions($this->getDataClass($this->context));
 
         // On garantit que les clés 'global' et 'row' existent TOUJOURS
         return [
