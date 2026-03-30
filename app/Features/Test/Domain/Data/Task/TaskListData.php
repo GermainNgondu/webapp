@@ -3,8 +3,11 @@
 namespace App\Features\Test\Domain\Data\Task;
 
 use App\Core\Framework\Support\Data\View\Attributes\{KanbanGroup,Column,CalendarDate};
+use App\Core\Framework\Support\Data\View\Attributes\DataAction;
 use Spatie\LaravelData\Data;
 
+#[DataAction(name: 'show', label: 'Vue', icon: 'eye')]
+#[DataAction(name: 'delete', label: 'Supprimer', icon: 'trash', color: 'red', confirm: 'Supprimer ce fichier définitivement ?')]
 class TaskListData extends Data {
     public function __construct(
         public string $id,

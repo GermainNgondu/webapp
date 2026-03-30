@@ -12,6 +12,7 @@ new #[Lazy] class extends Component
 ?>
 
 <div class="space-y-6">
+
     {{-- Header --}}
     @error('form_global')
         <x-core::ui.alert :message="$message" type="error"/>
@@ -29,10 +30,11 @@ new #[Lazy] class extends Component
     </div>
 
     @placeholder
-    <div class="flex items-center justify-center">
-        <flux:icon.loading />
-    </div>
+        <div class="flex items-center justify-center">
+            <flux:icon.loading />
+        </div>
     @endplaceholder
+
     <form  wire:submit.prevent="save" {{ $attributes }}>
 
         @csrf

@@ -22,15 +22,14 @@ class LoginData extends Data
         #[Field(
             label: 'Email', 
             type: 'email', 
-            required: true, 
-            rules: 'email',
-            colSpan: 12
+            rules: 'required|email',
+            colSpan: 12,
         )]
         public string $email,
         #[Field(
             label: 'Mot de passe', 
             type: 'password', 
-            required: true, 
+            rules: 'required', 
             colSpan: 12,
             options: [
                 'forgot_url' => '/admin/forgot-password'

@@ -4,7 +4,6 @@ namespace App\Features\Media\Domain\Data;
 
 use App\Core\Framework\Support\Data\View\Attributes\{
     DataAction,
-    Grid,
     Detail
 };
 use App\Features\Media\Domain\Models\Media;
@@ -16,13 +15,13 @@ class MediaDetailData extends Data
 {
     public function __construct(
         public int $id,
+        #[Detail(label: 'Media', component: 'core::data.view.viewers.media-viewer')]
+        public string $url,
         #[Detail(label: 'Nom du fichier')]
         public string $name,
-        #[Detail(label: 'Type MIME', component: 'core::ui.media-type-badge')]
+        #[Detail(label: 'Type', component: 'core::ui.media-type-badge', inline: true)]
         public string $type,
-        #[Grid(position: 'image')]
-        public string $url,
-        #[Detail(label: 'Taille')]
+        #[Detail(label: 'Taille', inline:true)]
         public string $human_readable_size,
     ) {}
 

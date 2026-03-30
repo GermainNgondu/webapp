@@ -53,7 +53,7 @@ trait HasDataViewCommon
         $this->activeItemId = $id;
         Flux::modal('item-detail')->show();
     }
-
+    
     /**
      * Récupération des filtres
      */
@@ -71,6 +71,7 @@ trait HasDataViewCommon
     {
         return $this->actions()['global'];
     }
+
     /**
      * Récupération des actions row
      */
@@ -89,17 +90,20 @@ trait HasDataViewCommon
     }
 
     #[Computed]
-    public function schema(): array 
+    public function schema(string $context): array 
     {
-        return LayoutDiscovery::resolve($this->getDataClass($this->context));
+        return match ($context) {
+             'list' => LayoutDiscovery::getColumnsSchema($this->getDataClass($context)),
+             'grid' => LayoutDiscovery::getGridSchema($this->getDataClass($context)),
+             'detail' => LayoutDiscovery::getDetailSchema($this->getDataClass($context)),
+             'kanban' => LayoutDiscovery::getKanbanConfig($this->getDataClass($context)),
+             'map' => LayoutDiscovery::getMapConfig($this->getDataClass($context)),
+             'calendar' => LayoutDiscovery::getCalendarConfig($this->getDataClass($context)),
+             default => LayoutDiscovery::getColumnsSchema($this->getDataClass($context)),
+        };
+        
     }
     
-    // Récupération du schéma de détail via le Service
-    #[Computed]
-    public function detailSchema(): array {
-        return LayoutDiscovery::getDetailSchema($this->getDataClass($this->context));
-    }
-
     /**
      * Récupération des données via l'Action
      */
@@ -151,7 +155,7 @@ trait HasDataViewCommon
             'kanban' => 'columns-3',
             'map'   => 'map',
             'calendar'=> 'calendar',
-            default  => 'stop',
+            default  => 'gallery-vertical-end',
         };
     }
     
@@ -179,7 +183,7 @@ trait HasDataViewCommon
         if (method_exists($this, $actionName)) {
             $this->{$actionName}($data);
         } else {
-           
+           $this->dispatch('notify', message: "action not exist: $actionName");
         }
     }
 

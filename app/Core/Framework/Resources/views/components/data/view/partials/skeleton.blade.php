@@ -1,4 +1,6 @@
-@props(['view', 'schema' => []])
+@props(['view'])
+
+@php $schema = $this->container[$view] ?? [];  @endphp
 
 <div wire:loading.delay.short 
     wire:target.except="handleAction, handleBulkAction, selected,quickCreate,saveQuickItem,showItem,

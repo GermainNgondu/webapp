@@ -2,6 +2,7 @@
 
 namespace App\Core\Framework\Support\Data\Form\Traits;
 
+use Exception;
 use App\Core\Framework\Support\Data\Form\Services\{ 
     AccordionFormService, 
     TabsFormService, 
@@ -103,13 +104,14 @@ trait HasForm
 
 
         }catch (ValidationException $e) {
+
             throw ValidationException::withMessages(
                 collect($e->errors())
-                    ->mapWithKeys(fn ($messages, $key) => ["form.{$key}" => $messages])
+                    ->mapWithKeys(fn ($messages, $key) => ["{$key}" => $messages])
                     ->all()
             );
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->addError('form_global', $e->getMessage());
             $this->dispatch('notify', 
                 message: $this->config['errorMessage'] ?? 'Une erreur est survenue', 

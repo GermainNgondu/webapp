@@ -1,11 +1,11 @@
 @php
     $items = $this->items;
-    $schema = $this->schema['columns'];
+    $schema = $this->schema('columns') ?? [];
     $actions = $this->getRowActions;
 @endphp
 
 @if($items->isEmpty())
-    <x-core::data.view.parts.empty />
+    <x-core::data.view.partials.empty icon="table"/>
 @else
     <flux:table container:class="max-h-[calc(100vh-150px)]">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">

@@ -3,7 +3,9 @@
     $actions = $this->getRowActions;
     $locale = app()->getLocale(); 
 @endphp
-
+@if($items->isEmpty())
+    <x-core::data.view.partials.empty icon="calendar"/>
+@else
 <div 
     wire:key="view-calendar-{{ md5(serialize($items->pluck('id'))) }}"
     x-data="{
@@ -93,5 +95,5 @@
     class="calendar-container p-6 "
 >
     <div x-ref="calendar"></div>
-    <x-core::data.view.partials.quick-create-modal />
 </div>
+@endif

@@ -19,17 +19,4 @@ trait HasKanbanView
             $this->dispatch('notify', message: "Statut mis à jour.");
         }
     }
-
-    // Quick Add : Initialisation
-    public function quickCreate($status) {
-        $config = LayoutDiscovery::getKanbanConfig($this->getDataClass($this->context));
-        $this->formState = [$config['field'] => $status];
-        Flux::modal('quick-create-modal')->show();
-    }
-
-    public function saveQuickItem() {
-        app($this->resource::getFormAction())->execute($this->formState);
-        $this->formState = [];
-        Flux::modal('quick-create-modal')->close();
-    }
 }

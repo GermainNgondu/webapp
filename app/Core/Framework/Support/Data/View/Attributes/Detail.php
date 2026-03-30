@@ -11,5 +11,7 @@ class Detail {
         public ?string $section = null,
         public ?string $component = null,
         public int $order = 0,
+        public int $colSpan = 12,
+        public bool $inline = false
     ) {}
 }

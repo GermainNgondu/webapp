@@ -16,6 +16,7 @@
     }"
     x-on:clear-selection.window="selected = []"
     class="mt-5 mb-5">
+
     <div class="sticky top-0 z-30 bg-white dark:bg-zinc-900 py-2 -mt-4">
         <div class="md:flex justify-between items-center mb-6 sm:space-y-2">
             <div class="flex items-center gap-3">
@@ -27,7 +28,7 @@
                     </flux:radio.group>
                 @endif
                 @if ($view == 'table' || $view == 'grid')
-                <x-core::data.view.parts.search/>
+                <x-core::data.view.partials.search/>
                 @endif
                 <div wire:loading wire:target="handleAction, showItem, updateItemStatus, updateEventDates">
                     <flux:icon.loading />
@@ -35,7 +36,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <x-core::data.view.parts.filters :schema="$filters" />
+                <x-core::data.view.partials.filters :schema="$filters" />
                 <x-core::data.view.actions.global :actions="$globalActions"/>
             </div>
                 
@@ -43,7 +44,7 @@
     </div>
 
     <div class="relative">
-        <x-core::data.view.parts.skeleton :view="$view" :schema="$this->schema" />
+        <x-core::data.view.partials.skeleton :view="$view" />
 
         <div wire:loading.remove  
             wire:target.except="handleAction, handleBulkAction, selected, 
@@ -58,12 +59,12 @@
 
     <div wire:loading.remove  wire:target.except="handleAction">
         @if ($view == 'table' || $view == 'grid')
-            <x-core::data.view.parts.pagination :items="$this->items" />
+            <x-core::data.view.partials.pagination :items="$this->items" />
         @endif
     </div>
 
     <x-core::data.view.actions.bulk-bar :actions="$bulkActions" :selected="$this->selected" />
 
-    <x-core::data.view.show :item="$this->activeItem" :schema="$this->detailSchema" :mode="$this->mode" />
+    <x-core::data.view.show :item="$this->activeItem" :mode="$this->mode" />
 
 </div>

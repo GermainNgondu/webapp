@@ -2,12 +2,10 @@
 
 namespace App\Core\Framework\Support\Data\View\Services;
 
-use ReflectionClass;
+use App\Core\Framework\Support\Data\View\Attributes\{ Column, Filter, Grid, DataAction, DefaultSort, Detail, KanbanGroup, MapLocation, CalendarDate };
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
-use App\Core\Framework\Support\Data\View\Attributes\{
-    Column, Filter, Grid, DataAction, DefaultSort, 
-    Detail, KanbanGroup, MapLocation, CalendarDate
-};
+use ReflectionClass;
 
 class LayoutDiscovery
 {
@@ -19,29 +17,27 @@ class LayoutDiscovery
      */
     public static function resolve(string $dataClass): array
     {
+        // 1. Retour immédiat si déjà résolu dans la requête courante (RAM)
         if (isset(self::$registry[$dataClass])) {
             return self::$registry[$dataClass];
         }
 
-        // Cache persistant pour la production (clé unique par classe)
-        $cacheKey = "dataview_discovery_v1_" . md5($dataClass);
+        $cacheKey = "dataview_discovery_v3_" . md5($dataClass);
 
-        self::$registry[$dataClass] = Cache::rememberForever($cacheKey, function () use ($dataClass) {
+        // 2. En local, on ignore le cache pour permettre le développement fluide des DTOs
+        if (App::isLocal()) {
+            Cache::forget($cacheKey);
+        }
+
+        self::$registry[$dataClass] = Cache::remember($cacheKey, now()->addDay(), function () use ($dataClass) {
+            if (!class_exists($dataClass)) {
+                return self::emptySchema();
+            }
+
             $reflection = new ReflectionClass($dataClass);
-            
-            $schema = [
-                'columns'  => [],
-                'filters'  => [],
-                'grid'     => [],
-                'detail'   => [],
-                'actions'  => [],
-                'sort'     => null,
-                'kanban'   => null,
-                'map'      => ['lat' => 'latitude', 'lng' => 'longitude', 'label' => '', 'title' => '', 'description' => ''],
-                'calendar' => ['start' => 'created_at', 'end' => null, 'label' => 'title'],
-            ];
+            $schema = self::emptySchema();
 
-            // 1. Analyse des attributs au niveau de la CLASSE (Actions & Tri)
+            // --- ANALYSE DES ATTRIBUTS DE CLASSE (Actions & Tri) ---
             foreach ($reflection->getAttributes() as $attribute) {
                 $name = $attribute->getName();
                 $inst = $attribute->newInstance();
@@ -54,7 +50,7 @@ class LayoutDiscovery
                 }
             }
 
-            // 2. Analyse des attributs au niveau des PROPRIÉTÉS (Un seul loop)
+            // --- ANALYSE DES PROPRIÉTÉS (Passage Unique) ---
             foreach ($reflection->getProperties() as $property) {
                 $propName = $property->getName();
                 
@@ -74,8 +70,12 @@ class LayoutDiscovery
                         
                         Detail::class => 
                             $schema['detail'][$inst->section][] = [
-                                'field' => $propName, 'label' => $inst->label, 
-                                'component' => $inst->component, 'order' => $inst->order
+                                'field' => $propName, 
+                                'label' => $inst->label, 
+                                'component' => $inst->component, 
+                                'order' => $inst->order,
+                                'colSpan'=> $inst->colSpan,
+                                'inline'=> $inst->inline
                             ],
                         
                         KanbanGroup::class => 
@@ -91,10 +91,28 @@ class LayoutDiscovery
                     };
                 }
             }
+
             return $schema;
         });
 
         return self::$registry[$dataClass];
+    }
+    /**
+     * Structure de base pour éviter les erreurs "Undefined index"
+     */
+    protected static function emptySchema(): array
+    {
+        return [
+            'columns'  => [],
+            'filters'  => [],
+            'grid'     => [],
+            'detail'   => [],
+            'actions'  => [],
+            'sort'     => null,
+            'kanban'   => ['field' => 'status', 'options' => []],
+            'map'      => ['lat' => 'lat', 'lng' => 'lng', 'label' => 'id'],
+            'calendar' => ['start' => 'created_at', 'end' => null, 'label' => 'id'],
+        ];
     }
 
     /**
@@ -112,14 +130,23 @@ class LayoutDiscovery
     }
 
     // Méthodes de compatibilité (Proxy vers resolve())
-    public static function getSchema(string $class): array { return self::resolve($class)['columns']; }
-     public static function getGridSchema(string $class): array { return self::resolve($class)['grid']; }
+    public static function getColumnsSchema(string $class): array { return self::resolve($class)['columns']; }
+    public static function getGridSchema(string $class): array { return self::resolve($class)['grid']; }
+    public static function getDetailSchema(string $class): array { return self::resolve($class)['detail']; }
     public static function getCalendarConfig(string $class): array { return self::resolve($class)['calendar']; }
     public static function getKanbanConfig(string $class): ?array { return self::resolve($class)['kanban']; }
     public static function getMapConfig(string $class): array { return self::resolve($class)['map']; }
-    public static function getDetailSchema(string $class): array { return self::resolve($class)['detail']; }
+
     public static function getFilters(string $class): array { return self::resolve($class)['filters']; }
     public static function getActions(string $class): array { return self::resolve($class)['actions']; }
     public static function getDefaultSort(string $class): ?string { return self::resolve($class)['sort']; }
-    
+ 
+    /**
+     * Vide le cache
+     */
+    public static function flush(string $class): void
+    {
+        Cache::forget("dataview_discovery_v3_" . md5($class));
+        unset(self::$registry[$class]);
+    }
 }
