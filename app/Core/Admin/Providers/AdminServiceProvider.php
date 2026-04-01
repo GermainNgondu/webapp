@@ -35,6 +35,7 @@ class AdminServiceProvider extends ServiceProvider
         $this->mapRoutes();
         $this->loadRoutesFrom(__DIR__.'/../Http/Routes/admin.php');
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'admin');
+        $this->loadMigrationsFrom(__DIR__ . '/../Domain/Database/Migrations');
         
         // Enregistrement de la commande
         if ($this->app->runningInConsole()) {

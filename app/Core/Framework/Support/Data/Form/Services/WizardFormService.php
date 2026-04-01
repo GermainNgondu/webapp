@@ -2,9 +2,7 @@
 
 namespace App\Core\Framework\Support\Data\Form\Services;
 
-use App\Core\Framework\Support\Data\Form\Attributes\Step;
 use App\Core\Framework\Support\Data\Form\Contracts\BaseFormService;
-use ReflectionClass;
 
 class WizardFormService extends BaseFormService
 {
@@ -12,30 +10,29 @@ class WizardFormService extends BaseFormService
 
     public function build(string $dataClass, array $inputData = []): array
     {
-        $reflection = new ReflectionClass($dataClass);
+        $metadata = self::resolveMetadata($dataClass);
         $steps = [];
 
-        foreach ($reflection->getProperties() as $property) 
+        foreach ($metadata['properties'] as $propMeta) 
         {
-            $stepAttr = $property->getAttributes(Step::class)[0] ?? null;
+            $stepMeta = $propMeta['secondary']['step'] ?? null;
             
-            if ($stepAttr) 
+            if ($stepMeta) 
             {
-                $instance = $stepAttr->newInstance();
-                $stepName = $instance->name;
+                $stepName = $stepMeta['name'];
 
                 if (!isset($steps[$stepName])) 
                 {
                     $steps[$stepName] = [
                         'title' => $stepName,
-                        'icon' => $instance->icon,
-                        'description' => $instance->description,
-                        'action'=> $instance->action,
+                        'icon' => $stepMeta['icon'],
+                        'description' => $stepMeta['description'],
+                        'action'=> $stepMeta['action'],
                         'fields' => []
                     ];
                 }
 
-                $steps[$stepName]['fields'][] = $this->resolveField($property, $inputData);
+                $steps[$stepName]['fields'][] = $this->resolveField($propMeta, $dataClass, $inputData);
             }
         }
 

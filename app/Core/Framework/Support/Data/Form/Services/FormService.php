@@ -10,6 +10,14 @@ class FormService extends BaseFormService
 
     public function build(string $dataClass, array $inputData = []): array
     {
-        return [];
+        $metadata = self::resolveMetadata($dataClass);
+        $fields = [];
+
+        foreach ($metadata['properties'] as $propMeta) {
+            $field = $this->resolveField($propMeta, $dataClass, $inputData);
+            if ($field) $fields[] = $field;
+        }
+
+        return $fields;
     }
 }

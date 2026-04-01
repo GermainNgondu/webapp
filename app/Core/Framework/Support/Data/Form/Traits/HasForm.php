@@ -80,11 +80,13 @@ trait HasForm
                 app($this->config['action'])->run($data->toArray());
             }
             
+            $this->dispatch('form_saved',data: $data->toArray())->to($this->config['dispatch'] ?? null);
+            
             // Succès : Notification Flux
-           $this->dispatch('notify', 
-                message: $this->config['successMessage'], 
-                variant: 'success'
-            );
+            $this->dispatch('notify', 
+                    message: $this->config['successMessage'], 
+                    variant: 'success'
+                );
 
             if ($this->config['redirect']) {
             

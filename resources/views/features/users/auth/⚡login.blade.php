@@ -6,6 +6,8 @@ use App\Features\Users\Domain\Data\Auth\LoginData;
 
 new #[Layout('admin::layouts.auth')] class extends Component
 {
+    public string $dataClass;
+
     public function mount()
     {
         $this->dataClass = LoginData::class;

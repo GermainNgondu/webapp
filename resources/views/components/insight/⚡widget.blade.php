@@ -30,7 +30,7 @@ new class extends Component
         $action = $this->config['action'];
 
         if ($action && class_exists($action)) {
-            return $action::run($this->property);
+            return $action::run($this->property,$this->config);
         }
     }
 };
@@ -76,7 +76,7 @@ new class extends Component
                     </div>
                 @endplaceholder
                 <x-dynamic-component 
-                    :component="'insight.types.' . $type.'-type'" 
+                    :component="'core::data.insight.types.' . $type.'-type'" 
                     :data="$this->data" 
                     :config="$this->widgetConfig" 
                 />

@@ -3,9 +3,7 @@
 namespace App\Core\Framework\Support\Data\Form\Services;
 
 
-use App\Core\Framework\Support\Data\Form\Attributes\{Field, Accordion};
 use App\Core\Framework\Support\Data\Form\Contracts\BaseFormService;
-use ReflectionClass;
 
 class AccordionFormService extends BaseFormService
 {
@@ -13,18 +11,17 @@ class AccordionFormService extends BaseFormService
 
     public function build(string $dataClass, array $inputData = []): array
     {
-        $reflection = new ReflectionClass($dataClass);
+        $metadata = self::resolveMetadata($dataClass);
         $accordions = [];
 
-        foreach ($reflection->getProperties() as $property) {
-            $accordionAttr = $property->getAttributes(Accordion::class)[0] ?? null;
-            $fieldAttr = $property->getAttributes(Field::class)[0] ?? null;
+        foreach ($metadata['properties'] as $propMeta) {
+            $accMeta = $propMeta['secondary']['accordion'] ?? null;
+            $inst = $propMeta['primary'];
 
-            if ($accordionAttr && $fieldAttr) {
-                $accordionName = $accordionAttr->newInstance()->name;
-                $accordionIcon = $accordionAttr->newInstance()->icon;
+            if ($accMeta && $inst) {
+                $accordionName = $accMeta['name'];
+                $accordionIcon = $accMeta['icon'];
 
-                // On groupe les champs par nom d'accordéon
                 if (!isset($accordions[$accordionName])) {
                     $accordions[$accordionName] = [
                         'title' => $accordionName,
@@ -33,7 +30,7 @@ class AccordionFormService extends BaseFormService
                     ];
                 }
 
-                $accordions[$accordionName]['fields'][] = $this->resolveField($property, $inputData);
+                $accordions[$accordionName]['fields'][] = $this->resolveField($propMeta, $dataClass, $inputData);
             }
         }
 

@@ -8,15 +8,18 @@ use Attribute;
 class FormConfig
 {
     public function __construct(
-        public string $title,
+        public string $title = '',
         public ?string $description = null,
         public string $layout = 'simple',
         public ?string $action = null, 
         public string $saveLabel = 'save',
+        public ?string $saveIcon = null,
         public ?string $icon = null,
         public ?string $redirect = null,
         public ?string $model = null,
         public ?string $successMessage = 'Opération réussie !',
         public ?string $errorMessage = 'Une erreur est survenue lors du traitement.',
+        public ?string $dispatch = null,
+        public ?string $cancel = null,//link
     ) {}
 }

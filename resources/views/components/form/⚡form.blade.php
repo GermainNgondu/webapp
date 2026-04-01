@@ -23,7 +23,7 @@ new #[Lazy] class extends Component
             <flux:icon :name="$config['icon']" class="h-6 w-6 text-zinc-600" />
         @endif
         <div>
-            <flux:heading size="xl">{{ $config['title'] }}</flux:heading>
+            <flux:heading size="xl">{{ $config['title'] ?? '' }}</flux:heading>
             @if($config['description']) <flux:subheading>{{ $config['description'] }}</flux:subheading> @endif
         </div>
     </div>
@@ -50,9 +50,17 @@ new #[Lazy] class extends Component
         {{-- Footer/Action --}}
         @if($config['layout'] !== 'wizard')
             <div class="flex justify-end gap-3 mt-8">
-                <flux:button variant="primary" wire:click="save" class="w-full sm:w-auto cursor-pointer">
-                    {{ $config['saveLabel'] }}
-                </flux:button>
+                <div class="flex items-center gap-3 justify-between">
+                    @if($config['cancel'])
+                        <flux:button variant="filled" wire:click="cancel" class="cursor-pointer capitalize">
+                            {{ __('cancel') }}
+                        </flux:button>
+                    @endif
+                    <flux:button variant="primary" wire:click="save" class="cursor-pointer" :icon="$config['saveIcon']">
+                        {{ ucfirst($config['saveLabel']) }}
+                    </flux:button>
+                </div>
+
             </div>
         @endif
     </form>

@@ -4,6 +4,8 @@ namespace App\Core\Framework\Support\Data\Form\Contracts;
 
 use ReflectionClass;
 use ReflectionProperty;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\App;
 use App\Core\Framework\Support\Data\Form\Attributes\{
     Field, 
     Repeater, 
@@ -12,30 +14,167 @@ use App\Core\Framework\Support\Data\Form\Attributes\{
     Section, 
     MediaPicker, 
     Blocks,
-    FormConfig
+    FormConfig,
+    Accordion,
+    Tab,
+    Step
 };
 
 abstract class BaseFormService
 {
+    // Cache statique pour la requête courante (RAM)
+    protected static array $metadataRegistry = [];
+
     abstract public function build(string $dataClass, array $inputData = []): array;
+
+    /**
+     * Analyse la classe de données et met en cache la structure.
+     */
+    public static function resolveMetadata(string $dataClass): array
+    {
+        if (isset(self::$metadataRegistry[$dataClass])) {
+            return self::$metadataRegistry[$dataClass];
+        }
+
+        $cacheKey = "form_metadata_v3_" . md5($dataClass);
+
+        if (App::isLocal()) {
+            Cache::forget($cacheKey);
+        }
+
+        self::$metadataRegistry[$dataClass] = Cache::remember($cacheKey, now()->addDay(), function () use ($dataClass) {
+            if (!class_exists($dataClass)) {
+                return ['config' => [], 'properties' => []];
+            }
+
+            $reflection = new ReflectionClass($dataClass);
+            $metadata = [
+                'config' => [],
+                'properties' => [],
+            ];
+
+            // --- FormConfig ---
+            $formConfigAttr = $reflection->getAttributes(FormConfig::class)[0] ?? null;
+            if ($formConfigAttr) {
+                $config = $formConfigAttr->newInstance();
+                $metadata['config'] = [
+                    'title'       => $config->title,
+                    'description' => $config->description,
+                    'layout'      => $config->layout,
+                    'action'      => $config->action,
+                    'model'       => $config->model,
+                    'saveLabel'   => $config->saveLabel,
+                    'saveIcon'    => $config->saveIcon,
+                    'icon'        => $config->icon,
+                    'redirect'    => $config->redirect,
+                    'successMessage' => $config->successMessage,
+                    'errorMessage' => $config->errorMessage,
+                    'dispatch'    => $config->dispatch,
+                    'cancel'      => $config->cancel,
+                ];
+            } else {
+                $metadata['config'] = [
+                    'title' => class_basename($dataClass),
+                    'layout' => 'simple',
+                    'saveLabel' => 'save',
+                    'saveIcon'=> null,
+                    'action' => null,
+                    'model'=> null,
+                    'successMessage' => 'Opération réussie !',
+                    'errorMessage' => 'Une erreur est survenue lors du traitement.',
+                    'dispatch'=> null,
+                    'cancel'=> null,
+                ];
+            }
+
+            // --- Properties ---
+            $primaryClasses = [Field::class, Repeater::class, LazySelect::class, MediaPicker::class, Blocks::class];
+
+            foreach ($reflection->getProperties() as $property) {
+                $name = $property->getName();
+                $propMeta = [
+                    'name' => $name,
+                    'primary' => null,
+                    'secondary' => [],
+                    'defaultValue' => $property->hasDefaultValue() ? $property->getDefaultValue() : null,
+                ];
+
+                // Attribut Primaire
+                foreach ($primaryClasses as $class) {
+                    $attr = $property->getAttributes($class)[0] ?? null;
+                    if ($attr) {
+                        $propMeta['primary'] = $attr->newInstance();
+                        break;
+                    }
+                }
+
+                if (!$propMeta['primary'] && $name !== 'id') continue;
+
+                // Attributs Secondaires
+                $sectionAttr = $property->getAttributes(Section::class)[0] ?? null;
+                if ($sectionAttr) {
+                    $inst = $sectionAttr->newInstance();
+                    $propMeta['secondary']['section'] = ['title' => $inst->title, 'description' => $inst->description, 'icon' => $inst->icon];
+                }
+
+                $visibleAttr = $property->getAttributes(VisibleIf::class)[0] ?? null;
+                if ($visibleAttr) {
+                    $inst = $visibleAttr->newInstance();
+                    $propMeta['secondary']['visibleIf'] = ['field' => $inst->field, 'value' => $inst->value, 'operator' => $inst->operator ?? '='];
+                }
+
+                $accordionAttr = $property->getAttributes(Accordion::class)[0] ?? null;
+                if ($accordionAttr) {
+                    $inst = $accordionAttr->newInstance();
+                    $propMeta['secondary']['accordion'] = ['name' => $inst->name, 'icon' => $inst->icon];
+                }
+
+                $tabAttr = $property->getAttributes(Tab::class)[0] ?? null;
+                if ($tabAttr) {
+                    $inst = $tabAttr->newInstance();
+                    $propMeta['secondary']['tab'] = [
+                        'name' => $inst->name, 
+                        'icon' => $inst->icon,
+                        'permission' => $inst->permission ?? null,
+                        'editPermission' => $inst->editPermission ?? null
+                    ];
+                }
+
+                $stepAttr = $property->getAttributes(Step::class)[0] ?? null;
+                if ($stepAttr) {
+                    $inst = $stepAttr->newInstance();
+                    $propMeta['secondary']['step'] = [
+                        'name' => $inst->name, 
+                        'icon' => $inst->icon, 
+                        'description' => $inst->description ?? null,
+                        'action' => $inst->action ?? null
+                    ];
+                }
+
+                $metadata['properties'][$name] = $propMeta;
+            }
+
+            return $metadata;
+        });
+
+        return self::$metadataRegistry[$dataClass];
+    }
 
     /**
      * Sécurité d'écriture : Nettoie les données reçues.
      */
     public function secureData(string $dataClass, array $inputData): array
     {
-        $reflection = new ReflectionClass($dataClass);
+        $metadata = self::resolveMetadata($dataClass);
         $safeData = [];
 
-        foreach ($reflection->getProperties() as $property) {
-            $name = $property->getName();
-            
+        foreach ($metadata['properties'] as $name => $prop) {
             if ($name === 'id' && isset($inputData['id'])) {
                 $safeData['id'] = $inputData['id'];
                 continue;
             }
 
-            $inst = $this->getPrimaryAttribute($property);
+            $inst = $prop['primary'];
             if (!$inst) continue;
 
             // SÉCURITÉ : Droit de voir ET d'éditer
@@ -69,16 +208,15 @@ abstract class BaseFormService
     /**
      * Sécurité de lecture : Construit la config du champ.
      */
-    protected function resolveField(ReflectionProperty $property, array $inputData = [], bool $parentReadOnly = false): ?array
+    protected function resolveField(array $propMeta, string $dataClass, array $inputData = [], bool $parentReadOnly = false): ?array
     {
-        $inst = $this->getPrimaryAttribute($property);
+        $inst = $propMeta['primary'];
         if (!$inst) return null;
 
         // SÉCURITÉ D'AFFICHAGE
         if (!$this->canView($inst)) { return null; }
 
-        $dataClass = $property->getDeclaringClass()->getName();
-        $name = $property->getName();
+        $name = $propMeta['name'];
         
         // CALCUL DU READONLY (Propagation)
         $isReadOnly = $parentReadOnly || !$this->canEdit($inst);
@@ -102,10 +240,11 @@ abstract class BaseFormService
             'options' => $inst->options ?? [],
             'rules' => $inst->rules ?? 'nullable',
         ];
+
         // Résolution de type spécifique (Media, Repeater, Lazy)
         $data = array_merge($data, $this->resolveTypeSpecificData($inst, $dataClass, $name, $inputData, $isReadOnly));
 
-        $data = array_merge($data, $this->resolveSecondaryAttributes($property));
+        $data = array_merge($data, $propMeta['secondary']);
 
         return $data;
     }
@@ -145,46 +284,6 @@ abstract class BaseFormService
         return $data;
     }
 
-    protected function resolveSecondaryAttributes(ReflectionProperty $property): array
-    {
-        $data = [];
-        
-        $sectionAttr = $this->getAttributeInstance($property, Section::class);
-        if ($sectionAttr) {
-            $data['section'] = ['title' => $sectionAttr->title, 'description' => $sectionAttr->description, 'icon' => $sectionAttr->icon];
-        }
-
-        $visibleAttr = $this->getAttributeInstance($property, VisibleIf::class);
-        if ($visibleAttr) {
-            $data['visibleIf'] = ['field' => $visibleAttr->field, 'value' => $visibleAttr->value, 'operator' => $visibleAttr->operator ?? '='];
-        }
-
-        return $data;
-    }
-    /**
-     * Récupère l'attribut principal d'un champ
-     */
-    protected function getPrimaryAttribute(ReflectionProperty $property): ?object
-    {
-        $primaryClasses = [
-            Field::class, 
-            Repeater::class, 
-            LazySelect::class, 
-            MediaPicker::class,
-            Blocks::class
-        ];
-        foreach ($primaryClasses as $class) {
-            $inst = $this->getAttributeInstance($property, $class);
-            if ($inst) return $inst;
-        }
-        return null;
-    }
-
-    protected function getAttributeInstance(ReflectionProperty $property, string $class): ?object
-    {
-        $attr = $property->getAttributes($class)[0] ?? null;
-        return $attr ? $attr->newInstance() : null;
-    }
 
     protected function canView(object $inst): bool
     {
@@ -198,12 +297,12 @@ abstract class BaseFormService
         return !isset($inst->editPermission) || empty($inst->editPermission) || ($user && $user->can($inst->editPermission));
     }
 
-    protected function getSchemaFromDataClass(string $dataClass, array $repeaterRows = [], bool $parentReadOnly = false): array
+    protected function getSchemaFromDataClass(string $dataClass, array $inputData = [], bool $parentReadOnly = false): array
     {
-        $subReflection = new ReflectionClass($dataClass);
+        $metadata = self::resolveMetadata($dataClass);
         $schema = [];
-        foreach ($subReflection->getProperties() as $prop) {
-            $field = $this->resolveField($prop, $repeaterRows, $parentReadOnly);
+        foreach ($metadata['properties'] as $propMeta) {
+            $field = $this->resolveField($propMeta, $dataClass, $inputData, $parentReadOnly);
             if ($field) $schema[] = $field;
         }
         return $schema;
@@ -234,21 +333,17 @@ abstract class BaseFormService
      */
     public function getBlockDefaultData(string $blockClass): array
     {
-        $reflection = new ReflectionClass($blockClass);
+        $metadata = self::resolveMetadata($blockClass);
         $defaults = [];
 
-        foreach ($reflection->getProperties() as $prop) {
-            // On vérifie si la propriété est un champ du formulaire (a un attribut Field, MediaPicker, etc.)
-            $inst = $this->getPrimaryAttribute($prop);
+        foreach ($metadata['properties'] as $name => $propMeta) {
+            $inst = $propMeta['primary'];
             if (!$inst) continue;
 
-            // On initialise avec la valeur par défaut définie dans la classe PHP, 
-            // sinon avec une valeur vide selon le type.
-            if ($prop->hasDefaultValue()) {
-                $defaults[$prop->getName()] = $prop->getDefaultValue();
+            if ($propMeta['defaultValue'] !== null) {
+                $defaults[$name] = $propMeta['defaultValue'];
             } else {
-                // Initialisation sécurisée pour éviter les erreurs Livewire/Alpine
-                $defaults[$prop->getName()] = $this->getDefaultValueForAttribute($inst);
+                $defaults[$name] = $this->getDefaultValueForAttribute($inst);
             }
         }
 
@@ -271,35 +366,7 @@ abstract class BaseFormService
      */
     public function getFormConfig(string $dataClass): array
     {
-        $reflection = new ReflectionClass($dataClass);
-        $attr = $reflection->getAttributes(FormConfig::class)[0] ?? null;
-
-        if (!$attr) {
-            return [
-                'title' => class_basename($dataClass),
-                'layout' => 'simple',
-                'saveLabel' => 'save',
-                'action' => null,
-                'model'=> null,
-                'successMessage' => 'Opération réussie !',
-                'errorMessage' => 'Une erreur est survenue lors du traitement.',
-            ];
-        }
-
-        $config = $attr->newInstance();
-
-        return [
-            'title'       => $config->title,
-            'description' => $config->description,
-            'layout'      => $config->layout,
-            'action'      => $config->action,
-            'model'       => $config->model,
-            'saveLabel'   => $config->saveLabel,
-            'icon'        => $config->icon,
-            'redirect'    => $config->redirect,
-            'successMessage' => $config->successMessage,
-            'errorMessage' => $config->errorMessage,
-        ];
+        return self::resolveMetadata($dataClass)['config'];
     }
 
     /**
@@ -310,15 +377,10 @@ abstract class BaseFormService
      */
     protected function getModelClass(string $dataClass): string
     {
-        $reflection = new ReflectionClass($dataClass);
-        $attr = $reflection->getAttributes(FormConfig::class)[0] ?? null;
+        $config = self::resolveMetadata($dataClass)['config'];
         
-        if ($attr) {
-            $config = $attr->newInstance();
-            // Priorité 1 : L'attribut FormConfig
-            if ($config->model) {
-                return $config->model;
-            }
+        if (!empty($config['model'])) {
+            return $config['model'];
         }
 
         // Priorité 2 : La constante MODEL dans la classe Data

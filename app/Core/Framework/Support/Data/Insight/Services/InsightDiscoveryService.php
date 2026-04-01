@@ -2,7 +2,8 @@
 
 namespace App\Core\Framework\Support\Data\Insight\Services;
 
-use App\Core\Framework\Support\Data\Insight\Attributes\{Chart, Metric, Trend,Card};
+use App\Core\Framework\Support\Data\Insight\Attributes\{ Chart, Metric, Trend, Card, Activity };
+use App\Core\Framework\Support\Data\Insight\Manager\InsightManager;
 use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use ReflectionProperty;
@@ -39,7 +40,11 @@ class InsightDiscoveryService
             foreach ($attributes as $attribute) {
                 $instance = $attribute->newInstance();
 
-                if ($instance instanceof Metric || $instance instanceof Chart || $instance instanceof Trend || $instance instanceof Card) {
+                if ($instance instanceof Metric || 
+                    $instance instanceof Chart || 
+                    $instance instanceof Trend || 
+                    $instance instanceof Card ||
+                    $instance instanceof Activity) {
                     $widgets[] = [
                         'type' => strtolower(class_basename($instance)),
                         'property' => $property->getName(),
@@ -85,5 +90,20 @@ class InsightDiscoveryService
     {
         $hash = md5($className);
         return base_path("bootstrap/cache/insights/insight_{$hash}.php");
+    }
+
+    /**
+     * Récupère tous les widgets disponibles depuis toutes les classes d'insights.
+     */
+    public function getAllAvailableInsights(): array
+    {
+        $manager = app(InsightManager::class);
+        $widgets = [];
+
+        foreach ($manager->getDataClasses() as $className) {
+            $widgets = array_merge($widgets, $this->performDiscovery($className));
+        }
+
+        return $widgets;
     }
 }
