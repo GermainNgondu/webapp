@@ -18,28 +18,28 @@ trait HasDashboard
 
         if($this->id) 
         {
-            return $query->where('id', $this->id)->first();
+            return $query->where('uuid', $this->id)->first();
         }
 
-        return $query->where('is_favorite', true)->first();
+        return $query->where('is_primary', true)->first();
     }
 
     #[Computed]
     public function insights()
     {
-        return auth()->user()->insights()->orderBy('is_favorite', 'desc')->orderBy('name')->get();
+        return auth()->user()->insights()->orderBy('is_primary', 'desc')->orderBy('name')->get();
     }
 
-    public function changeInsight($id): void
+    public function changeInsight(string|int $id): void
     {
         $this->id = $id;
     }
 
-    public function setFavorite($id): void
+    public function setPrimary($id): void
     {
-        auth()->user()->insights()->update(['is_favorite' => false]);
+        auth()->user()->insights()->update(['is_primary' => false]);
         
-        auth()->user()->insights()->where('id', $id)->update(['is_favorite' => true]);
+        auth()->user()->insights()->where('id', $id)->update(['is_primary' => true]);
 
         $this->dispatch('notify', message: 'Tableau de bord favori mis à jour', variant: 'success');
     }

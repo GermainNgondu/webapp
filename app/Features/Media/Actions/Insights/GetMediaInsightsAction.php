@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Media\Actions;
+namespace App\Features\Media\Actions\Insights;
 
 use App\Features\Media\Domain\Models\Media;
 use Lorisleiva\Actions\Concerns\AsAction;

@@ -6,6 +6,7 @@ use App\Core\Admin\Actions\Insights\FormInsightAction;
 use App\Core\Admin\Domain\Models\Insight;
 use App\Core\Framework\Support\Data\Form\Attributes\{Field,FormConfig};
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 #[FormConfig(
@@ -19,36 +20,37 @@ class InsightData extends Data
 {
     public function __construct(
         #[Field(
-            label: 'Nom', 
+            label: 'Name', 
             type: 'text', 
             rules: 'required|string',
             colSpan: 12,
+            required:true,
         )]
         public string $name,
 
         #[Field(
             label: 'Description', 
             type: 'textarea', 
-            rules: 'required|string',
+            rules: 'string',
             colSpan: 12,
         )]
-        public string $description,
+        public Optional|string $description,
 
         #[Field(
-            label: 'Favoris', 
+            label: 'Primary', 
             type: 'checkbox', 
-            rules: 'required|boolean',
+            rules: 'boolean',
             colSpan: 12,
         )]
-        public bool $favorite,
+        public Optional|bool $is_primary,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         return [
             'name' => ['required', 'string'],
-            'description' => ['required', 'string'],
-            'favorite' => ['required', 'boolean'],
+            'description' => ['string'],
+            'is_primary' => ['boolean'],
         ];
     }
 
@@ -56,8 +58,6 @@ class InsightData extends Data
     {
         return [
             'name.required' => 'Le nom est requis.',
-            'description.required' => 'La description est requise.',
-            'favorite.required' => 'Le champ favoris doit être un booléen.',
         ];
     }
 }

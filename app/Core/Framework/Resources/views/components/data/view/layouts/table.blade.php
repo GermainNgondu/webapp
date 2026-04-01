@@ -44,7 +44,7 @@
                             @endif
                         </flux:table.cell>
                     @endforeach
-                    <flux:table.cell>
+                    <flux:table.cell class="overflow-visible">
                         <x-core::data.view.actions.row :actions="$actions" :item="$item" />
                     </flux:table.cell>
                 </flux:table.row>

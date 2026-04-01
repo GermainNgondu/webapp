@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Insight extends Model
 {
-    protected $fillable = ['user_id', 'name', 'description', 'is_favorite', 'base_filters'];
+    protected $fillable = ['user_id','uuid', 'name','slug','description', 'is_primary', 'base_filters'];
     protected $casts = ['base_filters' => 'array'];
 
     public function widgets(): HasMany

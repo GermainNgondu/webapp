@@ -3,7 +3,9 @@
 namespace App\Features\Media\Providers;
 
 use App\Core\Framework\Data\NavigationItemData;
+use App\Core\Framework\Support\Data\Insight\Manager\InsightManager;
 use App\Core\Framework\Support\Managers\LayoutManager;
+use App\Features\Media\Actions\Insights\GetMediaInsightsAction;
 use Illuminate\Support\ServiceProvider;
 
 class MediaServiceProvider extends ServiceProvider
@@ -26,5 +28,18 @@ class MediaServiceProvider extends ServiceProvider
             icon: 'images',
             order: 98,
         ));
+
+        if ($this->app->bound(InsightManager::class)) {
+            
+            $manager = $this->app->make(InsightManager::class);
+
+            $manager->registerActions([
+                GetMediaInsightsAction::class => 'Médias',
+            ]);
+            $manager->registerDataClasses([
+                \App\Features\Media\Domain\Data\MediaInsightData::class,
+            ]);
+        }
+
     }
 }

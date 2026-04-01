@@ -15,6 +15,9 @@
             :disabled="$field['readonly'] ?? false"
             class="cursor-pointer"
         />
+        @if($field['required'] ?? false) 
+            <span class="text-red-500">*</span> 
+        @endif
     </div>
     <flux:error :name="$name" />
 </flux:field>

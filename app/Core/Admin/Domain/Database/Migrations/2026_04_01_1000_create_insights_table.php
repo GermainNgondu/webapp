@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('insights', function (Blueprint $table) {
             $table->id();
             $table->ulid('uuid')->unique();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->boolean('is_favorite')->default(false);
+            $table->boolean('is_primary')->default(false);
             $table->json('base_filters')->nullable();
             $table->timestamps();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->index('user_id');
         });
     }

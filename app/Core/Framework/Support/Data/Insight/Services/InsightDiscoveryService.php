@@ -95,13 +95,13 @@ class InsightDiscoveryService
     /**
      * Récupère tous les widgets disponibles depuis toutes les classes d'insights.
      */
-    public function getAllAvailableInsights(): array
+    public static function getAllAvailableInsights(): array
     {
         $manager = app(InsightManager::class);
         $widgets = [];
 
         foreach ($manager->getDataClasses() as $className) {
-            $widgets = array_merge($widgets, $this->performDiscovery($className));
+            $widgets = array_merge($widgets, self::performDiscovery($className));
         }
 
         return $widgets;

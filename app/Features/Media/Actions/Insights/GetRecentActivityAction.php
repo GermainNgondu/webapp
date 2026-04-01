@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Media\Actions;
+namespace App\Features\Media\Actions\Insights;
 
 use Spatie\Activitylog\Models\Activity;
 use Lorisleiva\Actions\Concerns\AsAction;

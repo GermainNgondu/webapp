@@ -15,11 +15,12 @@ use Illuminate\Validation\ValidationException;
 
 trait HasForm
 {
-     use HasFormFields;
+    use HasFormFields;
 
     public array $config = [];
     public array $builder = [];
     public string $layout ='simple';
+    public bool $edit = false;
 
     public function mount(string|int $id = null)
     {
@@ -50,6 +51,7 @@ trait HasForm
         if($model && $id)
         {  
             $data = ($this->dataClass)::from($model::find($id))->toArray();
+            $this->edit = true;
         }
         else
         {
@@ -76,6 +78,7 @@ trait HasForm
 
             // Validation Spatie Data
             $data = $this->validateData($this->dataClass, $safeData);
+            
             if ($this->config['action']) {
                 app($this->config['action'])->run($data->toArray());
             }
@@ -103,6 +106,8 @@ trait HasForm
                 
                 return redirect($this->config['redirect']);
             }
+
+            if(!$this->edit){ $this->reset('form');}
 
 
         }catch (ValidationException $e) {

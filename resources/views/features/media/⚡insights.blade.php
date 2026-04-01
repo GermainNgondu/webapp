@@ -21,7 +21,7 @@ new #[Lazy,Title('Médias Insights'),Layout('admin::layouts.admin')] class exten
     public function loadDashboard()
     {
         // 1. Découverte de la structure via les attributs du DTO
-        $discoveredWidgets = InsightDiscoveryService::discover(MediaInsightData::class);
+        $discoveredWidgets = InsightDiscoveryService::getAllAvailableInsights();
 
         // 3. Tri des widgets
         $this->widgets = $this->sortWidgets($discoveredWidgets, []);
@@ -34,7 +34,7 @@ new #[Lazy,Title('Médias Insights'),Layout('admin::layouts.admin')] class exten
     public function updateWidgetOrder(array $newOrder)
     {
         // Sauvegarde persistante
-        Auth::user()->setSetting('media_dashboard_order', $newOrder);
+        //Auth::user()->setSetting('media_dashboard_order', $newOrder);
 
         // Mise à jour de l'état local pour le rendu
         $this->widgets = collect($newOrder)

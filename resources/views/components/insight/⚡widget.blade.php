@@ -25,13 +25,15 @@ new class extends Component
     }
 
     #[Computed]
-    public function data()
+    public function data(): mixed
     {
         $action = $this->config['action'];
 
         if ($action && class_exists($action)) {
             return $action::run($this->property,$this->config);
         }
+
+        return null;
     }
 };
 ?>

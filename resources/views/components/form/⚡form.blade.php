@@ -29,12 +29,12 @@ new #[Lazy] class extends Component
     </div>
 
     @placeholder
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-center min-h-[150px]">
             <flux:icon.loading />
         </div>
     @endplaceholder
 
-    <form  wire:submit.prevent="save" {{ $attributes }}>
+    <form  wire:submit.prevent="save" {{ $attributes }} class="mt-2">
 
         @csrf
         @if($layout === 'accordion')

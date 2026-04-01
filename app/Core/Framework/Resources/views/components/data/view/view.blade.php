@@ -17,7 +17,6 @@
     x-on:clear-selection.window="selected = []"
     class="mt-5 mb-5">
 
-    <div class="hidden">{{ $this->refresh }}</div>
     <div class="sticky top-0 z-30 bg-white dark:bg-zinc-900 py-2 -mt-4">
         <div class="md:flex justify-between items-center mb-6 sm:space-y-2">
             <div class="flex items-center gap-3">

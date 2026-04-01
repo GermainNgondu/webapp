@@ -4,7 +4,7 @@ namespace App\Features\Media\Domain\Data;
 
 use App\Core\Framework\Support\Data\Insight\Attributes\{Metric, Chart,Trend,Card,Activity};
 use App\Core\Framework\Support\Data\Insight\Enums\ChartTypeInsightEnum;
-use App\Features\Media\Actions\{GetMediaInsightsAction,GetRecentActivityAction};
+use App\Features\Media\Actions\Insights\{GetMediaInsightsAction,GetRecentActivityAction};
 
 class MediaInsightData
 {
