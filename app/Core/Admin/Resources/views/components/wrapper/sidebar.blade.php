@@ -11,7 +11,7 @@
             :logo:dark="$brand->darkModeLogoUrl"
             :name="$brand->name"
         />
-        <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
+        <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2 cursor-pointer" />
     </flux:sidebar.header>
 
     <flux:sidebar.nav>
@@ -56,7 +56,7 @@
 </flux:sidebar>
 
 <flux:header class="lg:hidden">
-    <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+    <flux:sidebar.toggle class="lg:hidden cursor-pointer" icon="bars-2" inset="left" />
     <flux:spacer />
     <flux:dropdown position="top" align="start">
         <flux:profile :name="auth()->user()->name" :avatar="auth()->user()->avatar_url ?? ''" />

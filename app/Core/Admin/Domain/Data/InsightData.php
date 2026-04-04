@@ -11,14 +11,15 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 #[FormConfig(
     action: FormInsightAction::class,
-    saveLabel: 'add',
-    saveIcon: 'plus',
+    saveLabel: 'save',
     model: Insight::class,
     dispatch: 'main::admin.dashboard',
 )]
 class InsightData extends Data
 {
     public function __construct(
+        #[Field(type: 'hidden')]
+        public mixed $uuid,
         #[Field(
             label: 'Name', 
             type: 'text', 

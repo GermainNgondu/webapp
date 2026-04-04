@@ -2,6 +2,7 @@
 
 namespace App\Core\Framework\Support\Data\View\Traits;
 
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscoveryService;
 use App\Core\Framework\Support\Data\View\Traits\Shared\HasDataViewCommon;
 use Illuminate\Support\Str;
 
@@ -14,6 +15,16 @@ trait HasDataClassView
      */
     abstract protected function getDataClass(): string;
     abstract protected function getActionClass(): string;
+
+    /**
+     * Initialisation automatique par Livewire
+     */
+    public function mountHasDataClassView(): void
+    {
+        if (empty($this->sort)) {
+            $this->sort = LayoutDiscoveryService::getDefaultSort($this->getListDataClass());
+        }
+    }
 
     public function getItemsActionClass(): string
     {

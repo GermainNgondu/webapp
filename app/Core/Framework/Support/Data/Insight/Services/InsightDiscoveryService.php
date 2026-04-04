@@ -5,6 +5,7 @@ namespace App\Core\Framework\Support\Data\Insight\Services;
 use App\Core\Framework\Support\Data\Insight\Attributes\{ Chart, Metric, Trend, Card, Activity };
 use App\Core\Framework\Support\Data\Insight\Manager\InsightManager;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -46,6 +47,9 @@ class InsightDiscoveryService
                     $instance instanceof Card ||
                     $instance instanceof Activity) {
                     $widgets[] = [
+                        'id'=> md5($className.'-'.$property->getName()),
+                        'class'=> $className,
+                        'label'=> Str::kebab( $property->getName()),
                         'type' => strtolower(class_basename($instance)),
                         'property' => $property->getName(),
                         'action' => $instance->action ?? null,
@@ -105,5 +109,10 @@ class InsightDiscoveryService
         }
 
         return $widgets;
+    }
+
+    public static function getInsight(string|int $id): mixed
+    {
+        return collect(self::getAllAvailableInsights())->where('id',$id)->first();
     }
 }

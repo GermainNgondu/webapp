@@ -12,6 +12,7 @@ class FormInsightAction
 
     public function handle(array $data): void
     {
+        dd($data);
         $slug = Str::slug($data['name']);
 
         $data['uuid'] = (string) Str::ulid();

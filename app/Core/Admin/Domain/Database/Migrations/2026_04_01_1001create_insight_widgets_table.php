@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('action_class');
             $table->json('settings');
             $table->integer('sort_order')->default(0);
+            $table->softDeletes();
             $table->timestamps();
             $table->index(['insight_id', 'sort_order']);
         });

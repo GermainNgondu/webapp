@@ -2,6 +2,7 @@
 
 namespace App\Core\Framework\Support\Data\View\Traits;
 
+use App\Core\Framework\Support\Data\View\Services\LayoutDiscoveryService;
 use App\Core\Framework\Support\Data\View\Traits\Shared\HasDataViewCommon;
 
 trait HasResource
@@ -10,6 +11,15 @@ trait HasResource
     
     abstract protected function getResource(): string;
 
+    /**
+     * Initialisation automatique par Livewire
+     */
+    public function mountHasResource(): void
+    {
+        if (empty($this->sort)) {
+            $this->sort = LayoutDiscoveryService::getDefaultSort($this->getListDataClass());
+        }
+    }
     public function getModel(): string {
         return $this->getResource()::model();
     }

@@ -2,7 +2,7 @@
 @php $brand = $layout->getBrand(); @endphp
 
 <flux:header sticky class="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700">
-    <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+    <flux:sidebar.toggle class="lg:hidden cursor-pointer" icon="bars-2" inset="left" />
 
     <flux:brand :href="route($brand->homeRoute)" :logo="$brand->logoUrl" :name="$brand->name" class="max-lg:hidden dark:hidden" />
     <flux:brand :href="route($brand->homeRoute)" :logo="$brand->darkModeLogoUrl" :name="$brand->name" class="max-lg:hidden! hidden dark:flex" />
@@ -51,7 +51,7 @@
             :logo:dark="$brand->darkModeLogoUrl"
             :name="$brand->name"
         />
-        <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
+        <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2 cursor-pointer" />
     </flux:sidebar.header>
     <flux:sidebar.nav>
         @foreach($layout->getPrimary() as $item)

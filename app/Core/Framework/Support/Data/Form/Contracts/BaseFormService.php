@@ -3,7 +3,6 @@
 namespace App\Core\Framework\Support\Data\Form\Contracts;
 
 use ReflectionClass;
-use ReflectionProperty;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\App;
 use App\Core\Framework\Support\Data\Form\Attributes\{
@@ -11,6 +10,7 @@ use App\Core\Framework\Support\Data\Form\Attributes\{
     Repeater, 
     VisibleIf, 
     LazySelect, 
+    Select,
     Section, 
     MediaPicker, 
     Blocks,
@@ -88,7 +88,14 @@ abstract class BaseFormService
             }
 
             // --- Properties ---
-            $primaryClasses = [Field::class, Repeater::class, LazySelect::class, MediaPicker::class, Blocks::class];
+            $primaryClasses = [
+                    Field::class, 
+                    Repeater::class,
+                    Select::class, 
+                    LazySelect::class, 
+                    MediaPicker::class, 
+                    Blocks::class
+            ];
 
             foreach ($reflection->getProperties() as $property) {
                 $name = $property->getName();
@@ -226,6 +233,7 @@ abstract class BaseFormService
         if ($inst instanceof MediaPicker) $type = 'media-picker';
         if ($inst instanceof Repeater) $type = 'repeater';
         if ($inst instanceof LazySelect) $type = 'select';
+        if ($inst instanceof Select) $type = 'select';
         if ($inst instanceof Blocks) $type = 'blocks';
 
         $data = [
@@ -236,20 +244,21 @@ abstract class BaseFormService
             'readonly' => $isReadOnly,
             'type' => $type,
             'description' => $inst->description ?? null,
-            'required' => ($inst instanceof Field && $inst->required == true),
+            'required' => $inst->required ?? false,
             'options' => $inst->options ?? [],
+            'actionOptions'=> $inst->actionOptions ?? null,
             'rules' => $inst->rules ?? 'nullable',
         ];
 
         // Résolution de type spécifique (Media, Repeater, Lazy)
-        $data = array_merge($data, $this->resolveTypeSpecificData($inst, $dataClass, $name, $inputData, $isReadOnly));
+        $data = array_merge($data, $this->resolveTypeSpecificData($inst, $name, $inputData, $isReadOnly));
 
         $data = array_merge($data, $propMeta['secondary']);
 
         return $data;
     }
 
-    protected function resolveTypeSpecificData(object $inst, string $dataClass, string $name, array $inputData, bool $isReadOnly): array
+    protected function resolveTypeSpecificData(object $inst, string $name, array $inputData, bool $isReadOnly): array
     {
         $data = [];
 
@@ -270,7 +279,13 @@ abstract class BaseFormService
                 'iconColumn' => $inst->iconColumn ?? null,
                 'imageColumn' => $inst->imageColumn ?? null,
             ];
-        } elseif ($inst instanceof Blocks) {
+        } elseif ($inst instanceof Select) 
+        {
+            $action = $inst->actionOptions;
+
+            if($action){ $data['options'] = app($action)->run($inst) ?? []; }
+        }
+        elseif ($inst instanceof Blocks) {
             $data['allowedBlocks'] = collect($inst->allowedBlocks)->map(function ($blockClass) use ($inputData, $name, $isReadOnly) {
                 return [
                     'class' => $blockClass,

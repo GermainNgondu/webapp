@@ -10,7 +10,6 @@
     $modifier = $hasCondition ? '.live.debounce.250ms' : '';
 @endphp
 
-
 <flux:field {{ $attributes }}>
 
     <x-core::data.form.fields.label :field="$field" />
@@ -178,7 +177,6 @@
                     </li>
                 </template>
 
-                {{-- ÉLÉMENT SENTINELLE POUR LE LAZY LOADING --}}
                 @if($lazy)
                     <div x-intersect="loadMore()" class="p-2 flex justify-center">
                         <template x-if="loading">

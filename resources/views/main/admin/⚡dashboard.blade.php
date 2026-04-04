@@ -1,7 +1,7 @@
 <?php
 
 use Flux\Flux;
-use App\Core\Admin\Domain\Data\InsightData;
+use App\Core\Admin\Domain\Data\{InsightData,InsightWidgetData};
 use App\Core\Admin\Support\Traits\HasDashboard;
 use Livewire\Attributes\{Layout, Lazy, On};
 use Livewire\Component;
@@ -10,20 +10,12 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
 {
     use HasDashboard;
 
+    public string $widgetDataClass;
+
     public function mount()
     {
         $this->dataClass = InsightData::class;
-    }
-
-    #[On('form_saved')]
-    public function refreshInsights(): void
-    {
-        Flux::modal('form-insight')->close();
-    }
-
-    public function openFormModal()
-    {
-        Flux::modal('form-insight')->show();
+        $this->widgetDataClass = InsightWidgetData::class;
     }
 };
 ?>
@@ -39,12 +31,17 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
     @php 
     
         $insight = $this->insight; 
-        $items = collect($this->insights)->whereNotIn('id',$insight['id'])->all();
-        
+
+        if($insight)
+        {
+            $items = collect($this->insights)->whereNotIn('id',$insight['id'])->all();
+
+            $defaultData = ['insight_id'=> $insight['id']];        
+        }
+    
     @endphp
 
     @if($insight)
-    
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
                 <flux:heading size="xl" level="1">{{ ucfirst($insight['name']) }}</flux:heading>
@@ -52,14 +49,21 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
             </div>
 
             <div class="flex items-center gap-3">
-                <div wire:loading>
-                    <flux:icon.loading />
-                </div>
+                <div wire:loading> <flux:icon.loading /> </div>
+
+                <flux:modal.trigger name="form-insight-widget">
+                    <flux:button icon="plus" variant="primary" size="sm" class="cursor-pointer">
+                        {{ ucfirst(__('widget')) }}
+                    </flux:button>
+                </flux:modal.trigger>
+
                 <flux:dropdown>
-                    <flux:button icon:trailing="chevron-down">{{ ucfirst($insight['name']) }}</flux:button>
+                    <flux:button icon:trailing="chevron-down" size="sm" class="cursor-pointer">
+                        {{ ucfirst($insight['name']) }}
+                    </flux:button>
 
                     <flux:menu>
-                        <flux:menu.item icon="plus" wire:click="openFormModal" class="cursor-pointer">
+                        <flux:menu.item icon="plus" wire:click="openFormModal('form-create-insight')" class="cursor-pointer">
                             {{ucfirst(__('add')) }}
                         </flux:menu.item>
 
@@ -74,19 +78,46 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
                         @endforeach
                         
                     </flux:menu>
-                </flux:dropdown>                
-                <flux:modal.trigger name="insight-manager">
-                    <flux:button icon="settings" variant="ghost" class="cursor-pointer"/>
-                </flux:modal.trigger>
+                </flux:dropdown>
+                <flux:dropdown>
+
+                    <flux:button icon:trailing="ellipsis-vertical" size="sm"  variant="ghost" class="cursor-pointer" />
+
+                    <flux:menu>
+                        <flux:menu.item 
+                                icon="pencil-square" 
+                                wire:click="openFormModal('form-edit-insight')" 
+                                class="cursor-pointer">
+                                {{ucfirst(__('edit')) }}
+                        </flux:menu.item>
+                        <flux:menu.item 
+                            icon="trash" 
+                            wire:click="deleteInsight('{{ $insight['uuid'] }}')"
+                            wire:confirm="{{ __('Are you sure you want to delete this insight?') }}"
+                            class="cursor-pointer">
+                            {{ucfirst(__('delete')) }}
+                        </flux:menu.item>
+
+                    </flux:menu>
+                </flux:dropdown>
             </div>
         </div>
-        <x-core::data.insight.view :widgets="$this->insight->widgets"/>
+
+        <x-core::data.insight.view :widgets="$this->widgets"/>
+
+        <x-core::ui.modal mode="slideover" name="form-insight-widget" :title="__('widget')">
+            <livewire:form :dataClass="$widgetDataClass" key="form-insight-widget-{{ $insight['id'] }}" :data="$defaultData"/>
+        </x-core::ui.modal>
+
+        <x-core::ui.modal name="form-edit-insight" :title="__('insight')">
+            <livewire:form :dataClass="$dataClass" key="form-insight-{{ $insight['id'] }}" :data="$insight->toArray()"/>
+        </x-core::ui.modal>
 
     @else
         <div class="flex items-center justify-center min-h-[calc(100vh-150px)]">
             <div class="flex flex-col items-center gap-2">
                 <flux:icon name="chart-no-axes-combined" class="size-12" />
-                <flux:heading size="lg">Aucun tableau de bord</flux:heading>
+                <flux:heading size="lg">{{ ucfirst(__('no_dashboard')) }}</flux:heading>
                 <flux:modal.trigger name="form-insight">
                     <flux:button icon="plus" variant="primary" size="sm" class="capitalize cursor-pointer">
                         {{ __('add') }}
@@ -96,7 +127,7 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
         </div>
     @endif
 
-    <x-core::ui.modal name="form-insight" :title="__('insight')">
-         <livewire:form :dataClass="$this->dataClass" />
+    <x-core::ui.modal name="form-create-insight" :title="__('insight')">
+        <livewire:form :dataClass="$dataClass" key="form-insight"/>
     </x-core::ui.modal>
 </div>

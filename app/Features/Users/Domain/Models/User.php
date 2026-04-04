@@ -84,9 +84,9 @@ class User extends Authenticatable
     /**
      * Récupère le tableau de bord favori de l'utilisateur.
      */
-    public function favoriteInsight(): ?Insight
+    public function primaryInsight(): ?Insight
     {
-        return $this->insights()->where('is_favorite', true)->first();
+        return $this->insights()->where('is_primary', true)->first();
     }
     
 }

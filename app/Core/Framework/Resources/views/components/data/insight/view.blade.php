@@ -34,7 +34,7 @@
         >
             @foreach($widgets as $widget)
                 <div 
-                    data-id="{{ $widget['property'] }}"
+                    data-id="{{ $widget['id'] ?? $widget['property'] }}"
                     class="col-span-12 md:col-span-{{ $widget['config']['colSpan'] ?? 12 }}"
                 >
                     @livewire('insight.widget', ['widget' => $widget], key($widget['property']))

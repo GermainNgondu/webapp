@@ -2,16 +2,10 @@
 
 namespace App\Core\Framework\Support\Data\Form\Traits;
 
+use App\Core\Framework\Support\Data\Form\Services\{  AccordionFormService, TabsFormService, WizardFormService, SimpleFormService, FormService, };
 use Exception;
-use App\Core\Framework\Support\Data\Form\Services\{ 
-    AccordionFormService, 
-    TabsFormService, 
-    WizardFormService, 
-    SimpleFormService,
-    FormService,
-};
-
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Reactive;
 
 trait HasForm
 {
@@ -22,8 +16,12 @@ trait HasForm
     public string $layout ='simple';
     public bool $edit = false;
 
-    public function mount(string|int $id = null)
+
+    public mixed $data = null;
+
+    public function mount(string|int $id = null, mixed $data = [])
     {
+        $this->data = $data;
         // On récupère la config globale (layout, titre, action...)
         $this->config = app(FormService::class)->getFormConfig($this->dataClass);
 
@@ -48,6 +46,8 @@ trait HasForm
     {
         $data = [];
 
+        $defaultData = $this->data ?? [];
+        
         if($model && $id)
         {  
             $data = ($this->dataClass)::from($model::find($id))->toArray();
@@ -60,9 +60,12 @@ trait HasForm
                 $data = ($this->dataClass)::empty();
 
             } catch (\Throwable $th) {
-                //throw $th;
+
+                $this->addError('form_global', $th->getMessage());
             }
         }
+
+        if($defaultData){ $data = array_merge($data,$defaultData);}
 
         $this->form = $data;
     }

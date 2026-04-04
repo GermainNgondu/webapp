@@ -17,7 +17,6 @@ new #[Lazy] class extends Component
         <x-core::ui.alert :message="$message" type="error"/>
     @enderror
     
-    
     <div class="flex flex-col items-center gap-4">
         @if($config['icon'])
             <flux:icon :name="$config['icon']" class="h-6 w-6 text-zinc-600" />

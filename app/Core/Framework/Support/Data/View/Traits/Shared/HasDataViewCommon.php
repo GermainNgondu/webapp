@@ -35,16 +35,6 @@ trait HasDataViewCommon
     public $mode = 'slideover';
     public ?string $activeItemId = null;
 
-    /**
-     * Initialisation automatique par Livewire
-     */
-    public function mountHasResource(): void
-    {
-        if (empty($this->sort)) {
-            $this->sort = LayoutDiscoveryService::getDefaultSort($this->getListDataClass());
-        }
-    }
-
     // Récupération de l'item via l'Action Find
     #[Computed]
     public function activeItem() {

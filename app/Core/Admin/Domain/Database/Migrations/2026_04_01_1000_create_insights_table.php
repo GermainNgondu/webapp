@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->boolean('is_primary')->default(false);
+             $table->boolean('is_root')->default(false);
             $table->json('base_filters')->nullable();
+            $table->softDeletes();
             $table->timestamps();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->index('user_id');
