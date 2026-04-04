@@ -17,7 +17,7 @@ class InsightDiscoveryService
      */
     public static function discover(string $className): array
     {
-        if (app()->environment('production')) {
+        if (!app()->isLocal()) {
             $cachePath = self::getCachePath($className);
             if (File::exists($cachePath)) {
                 return require $cachePath;

@@ -156,7 +156,7 @@ trait HasDashboard
             $item = collect($this->widgets)->where('id',$id)->first();
             if($item)
             {
-                $widget = InsightWidget::find($item['_id']);
+                $widget = InsightWidget::find($item['id']);
                 
                 if($widget)
                 {
