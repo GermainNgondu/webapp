@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Admin\Domain\Data;
+namespace App\Core\Admin\Domain\Data\Insights;
 
 use App\Core\Admin\Actions\Insights\FormInsightAction;
 use App\Core\Admin\Domain\Models\Insight;

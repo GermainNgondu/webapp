@@ -14,6 +14,9 @@ trait HasDashboard
     #[Url(as: 'id')]
     public ?string $id = null;
 
+    //For editing
+    public array $widget = [];
+
 
 
     #[Computed]
@@ -38,9 +41,9 @@ trait HasDashboard
             foreach ($widgets as $widget) 
             {
                 $item = $widget['settings'];
-                $item['_uuid'] = $widget['uuid'];
-                $item['_id'] = $widget['id'];
-                $item['_insight_id'] = $widget['insight_id'];
+                $item['uuid'] = $widget['uuid'];
+                $item['id'] = $widget['id'];
+                $item['insight_id'] = $widget['insight_id'];
                 $items[] = $item;
             }
         }
@@ -51,8 +54,67 @@ trait HasDashboard
     #[On('form_saved')]
     public function refreshInsights(): void
     {
-        Flux::modal('form-insight')->close();
-        Flux::modal('form-insight-widget')->close();
+        Flux::modals()->close();
+    }
+
+    #[On('widgets-refresh')]
+    public function refreshWidgets(): void
+    {
+
+    }
+
+    #[On('widget-edit')]
+    public function editWidget(string|int $id,string|int $insightId): void
+    {
+        $insight = auth()->user()->insights()->where('id', $insightId)->first();
+
+        if($insight)
+        {
+            $widget = $insight->widgets()->where('uuid',$id)->first();
+
+            if($widget)
+            { 
+                $element = $widget['settings']['config'] ?? [];
+                $element['uuid'] = $widget['uuid'];
+                $element['insight_id'] = $widget['insight_id'];
+
+                $this->widget = $element; 
+                $this->modal('form-edit-insight-widget')->show();
+            }
+            else
+            {
+                $this->dispatch('notify', variant:'error', message: 'Widget not found');
+            }
+        }
+        else
+        {
+            $this->dispatch('notify', variant:'error', message: 'Insight not found');
+        }         
+    }
+
+    #[On('widget-delete')]
+    public function deleteWidget(string|int $id, string|int $insightId): void
+    {
+        $insight = auth()->user()->insights()->where('id', $insightId)->first();
+
+        if($insight)
+        {
+            $widget = $insight->widgets()->where('uuid',$id)->first();
+
+            if($widget)
+            { 
+                $widget->delete();
+                $this->dispatch('notify', message: 'Widget supprimé');
+            }
+            else
+            {
+                $this->dispatch('notify', variant:'error', message: 'Widget not found');
+            }
+        }
+        else
+        {
+            $this->dispatch('notify', variant:'error', message: 'Insight not found');
+        }            
     }
 
     public function openFormModal(string $target)

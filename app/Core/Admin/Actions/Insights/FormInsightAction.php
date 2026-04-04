@@ -12,15 +12,24 @@ class FormInsightAction
 
     public function handle(array $data): void
     {
-        dd($data);
-        $slug = Str::slug($data['name']);
-
-        $data['uuid'] = (string) Str::ulid();
-
-        $data['user_id'] = auth()->user()->id;
+        $uuid = $data['uuid'] ?? null;
         
-        $data['slug'] = $slug;
+        if($uuid)
+        {
+            $insight = Insight::where('uuid', $uuid)->first();
+            $insight->update($data);
+        }
+        else
+        {
+            $slug = Str::slug($data['name']);
 
-        Insight::create($data);
+            $data['uuid'] = (string) Str::ulid();
+
+            $data['user_id'] = auth()->user()->id;
+        
+            $data['slug'] = $slug;
+
+            Insight::create($data);
+        }
     }
 }

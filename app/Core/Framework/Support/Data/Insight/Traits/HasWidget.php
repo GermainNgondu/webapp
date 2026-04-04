@@ -9,7 +9,7 @@ trait HasWidget
     public array $config;
     public string $property;
     public string $type;
-    public array $widget;
+    public mixed $widget;
     
     public $value = null;
 
@@ -40,28 +40,13 @@ trait HasWidget
         return null;
     }
 
+    public function edit(string|int $insightId,string|int $widgetId): void
+    {
+        $this->dispatch('widget-edit', id: $widgetId, insightId: $insightId);
+    }
+
     public function delete(string|int $insightId,string|int $widgetId): void
     {
-       
-        $insight = auth()->user()->insights()->where('id', $insightId)->first();
-
-        if($insight)
-        {
-            $widget = $insight->widgets()->where('uuid',$widgetId)->first();
-
-            if($widget)
-            { 
-                $widget->delete();
-                $this->dispatch('notify', message: 'Widget supprimé');
-            }
-            else
-            {
-                $this->dispatch('notify', variant:'error', message: 'Widget not found');
-            }
-        }
-        else
-        {
-            $this->dispatch('notify', variant:'error', message: 'Insight not found');
-        }
+        $this->dispatch('widget-delete', id: $widgetId, insightId: $insightId);
     }
 }

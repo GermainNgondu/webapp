@@ -111,7 +111,7 @@ class InsightDiscoveryService
         return $widgets;
     }
 
-    public static function getInsight(string|int $id): mixed
+    public static function getWidget(string|int $id): mixed
     {
         return collect(self::getAllAvailableInsights())->where('id',$id)->first();
     }

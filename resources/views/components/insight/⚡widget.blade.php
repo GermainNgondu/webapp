@@ -13,7 +13,6 @@ new class extends Component
 
     <flux:card class="relative h-full flex flex-col group">
 
-        @if ($type != 'card')
             {{-- Header du Widget --}}
             <div class="flex items-center justify-between gap-2 mb-4">
                 <div class="flex items-center gap-2">
@@ -41,14 +40,14 @@ new class extends Component
                             </flux:menu.item>
                             <flux:menu.item 
                                 icon="pencil-square" 
-                                wire:click="edit('{{ $widget['_insight_id'] }}','{{ $widget['_uuid'] }}')" 
+                                wire:click="edit('{{ $widget['insight_id'] }}','{{ $widget['uuid'] }}')" 
                                 wire:island="{{ 'data-widget-'.$property }}" 
                                 class="cursor-pointer">
                                 {{ucfirst(__('edit')) }}
                             </flux:menu.item>
                             <flux:menu.item 
                                 icon="trash" 
-                                wire:click="delete('{{ $widget['_insight_id'] }}','{{ $widget['_uuid'] }}')"
+                                wire:click="delete('{{ $widget['insight_id'] }}','{{ $widget['uuid'] }}')"
                                 wire:confirm="{{ __('Are you sure you want to delete this widget?') }}"
                                 wire:island="{{ 'data-widget-'.$property }}" 
                                 class="cursor-pointer">
@@ -58,8 +57,7 @@ new class extends Component
                         </flux:menu>
                     </flux:dropdown>
                 </div>
-            </div>            
-        @endif
+            </div>
 
 
         <div class="flex-1 flex flex-col justify-center">

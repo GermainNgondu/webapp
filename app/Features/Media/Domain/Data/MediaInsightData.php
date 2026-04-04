@@ -11,7 +11,6 @@ class MediaInsightData
 
     #[Card(
         label: 'Total Médias',
-        icon: 'images',
         description: 'Nombre total de fichiers stockés',
         colSpan:1
     )]

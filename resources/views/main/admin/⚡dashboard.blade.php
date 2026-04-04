@@ -1,9 +1,9 @@
 <?php
 
 use Flux\Flux;
-use App\Core\Admin\Domain\Data\{InsightData,InsightWidgetData};
+use App\Core\Admin\Domain\Data\Insights\{InsightData,InsightCreateWidgetData,InsightEditWidgetData};
 use App\Core\Admin\Support\Traits\HasDashboard;
-use Livewire\Attributes\{Layout, Lazy, On};
+use Livewire\Attributes\{Layout, Lazy};
 use Livewire\Component;
 
 new #[Lazy, Layout('admin::layouts.admin')] class extends Component
@@ -11,11 +11,13 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
     use HasDashboard;
 
     public string $widgetDataClass;
+    public string $widgetEditDataClass;
 
     public function mount()
     {
         $this->dataClass = InsightData::class;
-        $this->widgetDataClass = InsightWidgetData::class;
+        $this->widgetDataClass = InsightCreateWidgetData::class;
+        $this->widgetEditDataClass = InsightEditWidgetData::class;
     }
 };
 ?>
@@ -25,22 +27,20 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
         <flux:icon.loading />
     </div>
 @endplaceholder
+@php 
+    
+    $insight = $this->insight; 
 
+    if($insight)
+    {
+        $items = collect($this->insights)->whereNotIn('id',$insight['id'])->all();
+
+        $defaultData = ['insight_id'=> $insight['id']];        
+    }
+    
+@endphp
 
 <div>
-    @php 
-    
-        $insight = $this->insight; 
-
-        if($insight)
-        {
-            $items = collect($this->insights)->whereNotIn('id',$insight['id'])->all();
-
-            $defaultData = ['insight_id'=> $insight['id']];        
-        }
-    
-    @endphp
-
     @if($insight)
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
@@ -51,7 +51,7 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
             <div class="flex items-center gap-3">
                 <div wire:loading> <flux:icon.loading /> </div>
 
-                <flux:modal.trigger name="form-insight-widget">
+                <flux:modal.trigger name="form-create-insight-widget">
                     <flux:button icon="plus" variant="primary" size="sm" class="cursor-pointer">
                         {{ ucfirst(__('widget')) }}
                     </flux:button>
@@ -80,7 +80,6 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
                     </flux:menu>
                 </flux:dropdown>
                 <flux:dropdown>
-
                     <flux:button icon:trailing="ellipsis-vertical" size="sm"  variant="ghost" class="cursor-pointer" />
 
                     <flux:menu>
@@ -105,8 +104,14 @@ new #[Lazy, Layout('admin::layouts.admin')] class extends Component
 
         <x-core::data.insight.view :widgets="$this->widgets"/>
 
-        <x-core::ui.modal mode="slideover" name="form-insight-widget" :title="__('widget')">
-            <livewire:form :dataClass="$widgetDataClass" key="form-insight-widget-{{ $insight['id'] }}" :data="$defaultData"/>
+        <x-core::ui.modal mode="slideover" name="form-create-insight-widget" :title="__('widget')">
+            <livewire:form :dataClass="$widgetDataClass" key="form-create-insight-widget-{{ $insight['id'] }}" :data="$defaultData"/>
+        </x-core::ui.modal>
+
+        <x-core::ui.modal name="form-edit-insight-widget" :title="__('widget')">
+            @if ($widget)
+               <livewire:form :dataClass="$widgetEditDataClass" key="widget-{{ $widget['uuid'] }}" :data="$widget"/> 
+            @endif
         </x-core::ui.modal>
 
         <x-core::ui.modal name="form-edit-insight" :title="__('insight')">

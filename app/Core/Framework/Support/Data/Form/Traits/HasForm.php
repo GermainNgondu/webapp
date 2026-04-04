@@ -47,7 +47,7 @@ trait HasForm
         $data = [];
 
         $defaultData = $this->data ?? [];
-        
+
         if($model && $id)
         {  
             $data = ($this->dataClass)::from($model::find($id))->toArray();

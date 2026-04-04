@@ -10,7 +10,7 @@ class Insight extends Model
 {
     use SoftDeletes;
     protected $fillable = ['user_id','uuid', 'name','slug','description', 'is_primary', 'base_filters'];
-    protected $casts = ['base_filters' => 'array'];
+    protected $casts = ['base_filters' => 'array','is_primary'=> 'boolean'];
 
     public function widgets(): HasMany
     {
